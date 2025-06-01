@@ -1,27 +1,6 @@
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
-  const footerLinks = {
-    company: [
-      { name: 'About Us', href: '#' },
-      { name: 'Careers', href: '#' },
-      { name: 'Contact', href: '#' },
-      { name: 'Blog', href: '#' }
-    ],
-    services: [
-      { name: 'Cargo Tracking', href: '/cargo' },
-      { name: 'Container Management', href: '/container' },
-      { name: 'Package Tracking', href: '/package' },
-      { name: 'Vehicle Tracking', href: '/car' }
-    ],
-    support: [
-      { name: 'Help Center', href: '#' },
-      { name: 'Terms of Service', href: '#' },
-      { name: 'Privacy Policy', href: '#' },
-      { name: 'FAQs', href: '#' }
-    ]
-  };
-
   return (
     <footer className="mt-16">
       <div className="bg-green-600 text-white py-16">

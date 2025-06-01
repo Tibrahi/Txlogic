@@ -15,12 +15,6 @@ interface CarData {
   registration: string;
 }
 
-interface ValidationErrors {
-  id?: string;
-  licensePlate?: string;
-  vin?: string;
-}
-
 const CarDetails = () => {
   const { id } = useParams();
   const [carId, setCarId] = useState(id || '');
@@ -33,9 +27,29 @@ const CarDetails = () => {
     setIsLoading(true);
     setErrors({});
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Simulated car data
+      setCarData({
+        id: carId,
+        status: 'In Transit',
+        type: 'Delivery Truck',
+        currentLocation: 'Distribution Center',
+        destination: 'Warehouse A',
+        estimatedArrival: '2024-03-22 14:00',
+        licensePlate: 'ABC123',
+        vin: '1HGCM82633A123456',
+        driver: 'John Doe',
+        fuelLevel: '75%',
+        registration: 'Active'
+      });
+    } catch (error) {
+      setErrors({ id: 'Error fetching vehicle information' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
