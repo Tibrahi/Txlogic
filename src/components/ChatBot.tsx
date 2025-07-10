@@ -136,34 +136,34 @@ const ChatBot = () => {
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          className="bg-green-600 text-white p-3 sm:p-4 rounded-full shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
           </svg>
         </button>
       ) : (
-        <div className="bg-white rounded-lg shadow-xl w-96 h-[500px] flex flex-col">
-          <div className="p-4 border-b flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Tracking Assistant</h3>
+        <div className="bg-white rounded-lg shadow-xl w-[calc(100vw-2rem)] sm:w-96 h-[calc(100vh-8rem)] sm:h-[500px] flex flex-col">
+          <div className="p-3 sm:p-4 border-b flex justify-between items-center">
+            <h3 className="text-base sm:text-lg font-semibold">Tracking Assistant</h3>
             <button
               onClick={() => setIsOpen(false)}
               className="text-gray-500 hover:text-gray-700"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
             {messages.map((message, index) => (
               <div key={index} className="space-y-2">
                 <div
                   className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
+                    className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 ${
                       message.isUser
                         ? 'bg-green-600 text-white'
                         : 'bg-gray-100 text-gray-800'

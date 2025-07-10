@@ -113,27 +113,27 @@ const Home = () => {
             }`}
           >
             <div className={`${slide.color} h-full flex items-center`}>
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-                <div className="text-white max-w-2xl">
-                  <h1 className="text-5xl font-bold mb-6">{slide.title}</h1>
-                  <p className="text-xl mb-4">{slide.description}</p>
-                  <p className="text-lg mb-8 text-green-100">{slide.subDescription}</p>
-                  <div className="flex gap-4">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between py-12 lg:py-0">
+                <div className="text-white max-w-2xl text-center lg:text-left mb-8 lg:mb-0">
+                  <h1 className="text-4xl sm:text-5xl font-bold mb-4 sm:mb-6">{slide.title}</h1>
+                  <p className="text-lg sm:text-xl mb-3 sm:mb-4">{slide.description}</p>
+                  <p className="text-base sm:text-lg mb-6 sm:mb-8 text-green-100">{slide.subDescription}</p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <Link
                       to="/cargo"
-                      className="inline-block bg-white text-green-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors duration-300"
+                      className="inline-block bg-white text-green-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-gray-100 transition-colors duration-300"
                     >
                       Get Started
                     </Link>
                     <Link
                       to="/tracking"
-                      className="inline-block border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white/10 transition-colors duration-300"
+                      className="inline-block border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white/10 transition-colors duration-300"
                     >
                       Learn More
                     </Link>
                   </div>
                 </div>
-                <div className="text-8xl hidden lg:block">
+                <div className="text-6xl sm:text-7xl lg:text-8xl">
                   {slide.image}
                 </div>
               </div>
@@ -153,57 +153,57 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-4 sm:p-6">
         {features.map((feature, index) => (
           <Link
             key={index}
             to={feature.link}
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 hover:border-green-500 hover:border-2"
+            className="bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300 hover:border-green-500 hover:border-2 flex flex-col items-center text-center"
           >
-            <div className="text-4xl mb-4 bg-green-100 text-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+            <div className="text-3xl sm:text-4xl mb-3 sm:mb-4 bg-green-100 text-green-600 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center">
               {feature.icon}
             </div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
               {feature.title}
             </h2>
-            <p className="text-gray-600">{feature.description}</p>
+            <p className="text-sm sm:text-base text-gray-600">{feature.description}</p>
           </Link>
         ))}
       </section>
 
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">Our Services</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-8 sm:mb-12">Our Services</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {services.map((service, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                <div className="text-4xl mb-4 bg-green-100 text-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+              <div key={index} className="bg-white rounded-lg shadow-md p-4 sm:p-6 flex flex-col items-center text-center">
+                <div className="text-3xl sm:text-4xl mb-3 sm:mb-4 bg-green-100 text-green-600 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center">
                   {service.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2 text-center">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
                   {service.title}
                 </h3>
-                <p className="text-gray-600 text-center">{service.description}</p>
+                <p className="text-sm sm:text-base text-gray-600">{service.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-16 mb-16">
+      <section className="py-12 sm:py-16 mb-12 sm:mb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">How It Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-8 sm:mb-12">How It Works</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {workflow.map((step, index) => (
               <div key={index} className="relative">
-                <div className="bg-white rounded-lg shadow-md p-6 h-full">
-                  <div className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center text-xl font-bold mb-4">
+                <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 h-full">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-600 text-white rounded-full flex items-center justify-center text-lg sm:text-xl font-bold mb-3 sm:mb-4">
                     {step.step}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
                     {step.title}
                   </h3>
-                  <p className="text-gray-600">{step.description}</p>
+                  <p className="text-sm sm:text-base text-gray-600">{step.description}</p>
                 </div>
                 {index < workflow.length - 1 && (
                   <div className="hidden lg:block absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2">

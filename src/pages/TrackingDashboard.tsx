@@ -166,76 +166,76 @@ const TrackingDashboard = () => {
 
   return (
     <div className="w-screen min-h-screen flex flex-col">
-      <div className="w-full bg-green-600 p-8 text-white">
-        <h1 className="text-3xl font-bold text-center">Tracking Dashboard</h1>
+      <div className="w-full bg-green-600 p-6 sm:p-8 text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center">Tracking Dashboard</h1>
       </div>
       
       <div className="flex-grow w-full">
-        <section className="w-full py-16">
+        <section className="w-full py-8 sm:py-16">
           <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">Your Tracking List</h2>
+            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">Your Tracking List</h2>
               
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {trackingItems.map((item) => (
-                  <div key={item.id} className="border rounded-lg p-6 hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-4">
-                        <span className="text-3xl">{getTypeIcon(item.type)}</span>
+                  <div key={item.id} className="border rounded-lg p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <span className="text-2xl sm:text-3xl">{getTypeIcon(item.type)}</span>
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-800">
                             {item.type.charAt(0).toUpperCase() + item.type.slice(1)} {item.id}
                           </h3>
-                          <p className={`font-medium ${getStatusColor(item.status)}`}>
+                          <p className={`text-sm sm:text-base font-medium ${getStatusColor(item.status)}`}>
                             {item.status}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">Estimated Arrival</p>
-                        <p className="font-medium">{item.estimatedArrival}</p>
+                      <div className="text-left sm:text-right">
+                        <p className="text-xs sm:text-sm text-gray-600">Estimated Arrival</p>
+                        <p className="text-sm sm:text-base font-medium">{item.estimatedArrival}</p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
                       <div>
-                        <p className="text-sm text-gray-600">Purchase Date</p>
-                        <p className="font-medium">{item.purchaseDate}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">Purchase Date</p>
+                        <p className="text-sm sm:text-base font-medium">{item.purchaseDate}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Purchase Location</p>
-                        <p className="font-medium">{item.purchaseLocation}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">Purchase Location</p>
+                        <p className="text-sm sm:text-base font-medium">{item.purchaseLocation}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Price</p>
-                        <p className="font-medium">{item.price}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">Price</p>
+                        <p className="text-sm sm:text-base font-medium">{item.price}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Current Location</p>
-                        <p className="font-medium">{item.currentLocation}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">Current Location</p>
+                        <p className="text-sm sm:text-base font-medium">{item.currentLocation}</p>
                       </div>
                     </div>
 
                     <div className="mt-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2">Additional Information</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">Additional Information</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                         {Object.entries(item.additionalInfo).map(([key, value]) => (
                           <div key={key}>
-                            <p className="text-sm text-gray-600">{key}</p>
-                            <p className="font-medium">{value}</p>
+                            <p className="text-xs sm:text-sm text-gray-600">{key}</p>
+                            <p className="text-sm sm:text-base font-medium">{value}</p>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <div className="mt-4">
-                      <div className="flex justify-between text-sm mb-1">
+                      <div className="flex justify-between text-xs sm:text-sm mb-1">
                         <span className="text-gray-600">Progress</span>
                         <span className="font-medium">{item.progress}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-green-600 h-2.5 rounded-full transition-all duration-300"
+                          className="bg-green-600 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${item.progress}%` }}
                         ></div>
                       </div>
@@ -244,7 +244,7 @@ const TrackingDashboard = () => {
                     <div className="mt-4 flex justify-end">
                       <Link
                         to={getTrackingRoute(item.type, item.id)}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        className="inline-flex items-center px-3 sm:px-4 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                       >
                         View Details
                       </Link>
