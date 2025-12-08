@@ -1,29 +1,38 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import {
+  TruckIcon,
+  GlobeAltIcon,
+  ChartBarSquareIcon,
+  CubeIcon,
+  ClipboardDocumentCheckIcon,
+  WrenchScrewdriverIcon,
+  MapPinIcon,
+  TagIcon,
+} from '@heroicons/react/24/outline';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // STRICT COLOR THEME: BLACK backgrounds for Hero
   const heroSlides = [
     {
-      title: "Track Your Shipments",
-      description: "Real-time tracking for all your logistics needs. Monitor your cargo, containers, packages, and vehicles with our advanced tracking system.",
-      subDescription: "Get instant updates, delivery notifications, and detailed status reports.",
-      image: "🚢",
-      color: "bg-green-600"
+      title: "Real-time Shipment Tracking",
+      description: "Monitor your cargo, containers, packages, and vehicles with our advanced, reliable tracking system.",
+      Icon: MapPinIcon,
+      color: "bg-black" // Pure Black
     },
     {
-      title: "Global Logistics Solutions",
-      description: "Seamless international shipping solutions with comprehensive customs clearance support and real-time documentation management.",
-      subDescription: "Connect with trusted partners worldwide and expand your business globally.",
-      image: "🌍",
-      color: "bg-green-700"
+      title: "Global Supply Chain Management",
+      description: "Seamless international shipping solutions with comprehensive customs support and digital documentation.",
+      Icon: GlobeAltIcon,
+      color: "bg-gray-900" // Very Dark Gray (almost black)
     },
     {
-      title: "Smart Analytics & Insights",
-      description: "Data-driven insights for better decisions. Monitor performance metrics, optimize routes, and reduce operational costs.",
-      subDescription: "Leverage AI-powered analytics to streamline your supply chain operations.",
-      image: "📊",
-      color: "bg-green-800"
+      title: "Smart Logistics Analytics",
+      description: "Data-driven insights for better decisions. Optimize routes and significantly reduce operational costs.",
+      Icon: ChartBarSquareIcon,
+      color: "bg-black" // Pure Black
     }
   ];
 
@@ -32,191 +41,238 @@ const Home = () => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroSlides.length]);
 
   const features = [
     {
       title: 'Cargo Tracking',
-      description: 'Track your cargo shipments in real-time',
+      description: 'Track your large cargo shipments and freight in real-time.',
       link: '/cargo',
-      icon: '📦'
+      Icon: CubeIcon
     },
     {
       title: 'Container Management',
-      description: 'Manage and monitor container status',
+      description: 'View and manage the status and location of all shipping containers.',
       link: '/container',
-      icon: '🚢'
+      Icon: TagIcon
     },
     {
       title: 'Package Details',
-      description: 'View detailed package information',
+      description: 'Get granular, step-by-step updates for individual packages.',
       link: '/package',
-      icon: '📝'
+      Icon: ClipboardDocumentCheckIcon
     },
     {
       title: 'Vehicle Tracking',
-      description: 'Track vehicle movements and status',
+      description: 'Monitor fleet movements, routes, and vehicle maintenance status.',
       link: '/car',
-      icon: '🚛'
+      Icon: TruckIcon
     }
   ];
 
   const services = [
     {
       title: 'Global Shipping',
-      description: 'International shipping solutions with real-time tracking and customs clearance support.',
-      icon: '🌍'
+      description: 'Reliable door-to-door international shipping with full customs support.',
+      Icon: GlobeAltIcon
     },
     {
       title: 'Warehouse Management',
-      description: 'Efficient warehouse operations with inventory tracking and automated management systems.',
-      icon: '🏭'
+      description: 'Automated inventory tracking and efficient inbound/outbound operations.',
+      Icon: WrenchScrewdriverIcon
     },
     {
       title: 'Supply Chain Analytics',
-      description: 'Advanced analytics and reporting tools for optimizing your supply chain operations.',
-      icon: '📊'
+      description: 'Predictive analytics and comprehensive reporting for optimization.',
+      Icon: ChartBarSquareIcon
     }
   ];
 
   const workflow = [
     {
       step: '1',
-      title: 'Shipment Creation',
-      description: 'Create and register your shipment with detailed information and requirements.'
+      title: 'Shipment Booking',
+      description: 'Quickly create and register your shipment with detailed requirements and digital booking.'
     },
     {
       step: '2',
-      title: 'Real-time Tracking',
-      description: 'Monitor your shipment\'s location and status through our advanced tracking system.'
+      title: 'Real-time Monitoring',
+      description: 'Track the precise location and status of your consignment across all checkpoints.'
     },
     {
       step: '3',
-      title: 'Documentation',
-      description: 'Manage all shipping documents digitally with our comprehensive documentation system.'
+      title: 'Digital Documentation',
+      description: 'Access and manage all necessary shipping documents and customs paperwork digitally.'
     },
     {
       step: '4',
-      title: 'Delivery Confirmation',
-      description: 'Receive instant notifications and proof of delivery when your shipment arrives.'
+      title: 'Secure Delivery',
+      description: 'Receive instant confirmation and proof of delivery upon successful, secure arrival.'
     }
   ];
 
   return (
-    <div className="w-full min-h-screen">
-      <section className="relative h-screen w-full overflow-hidden">
+    <div className="w-full bg-white text-gray-900">
+      
+      {/* Hero Section - FIXED: Uses w-screen to force full width coverage */}
+      <section className="relative h-screen w-screen overflow-hidden bg-black">
         {heroSlides.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <div className={`${slide.color} h-full flex items-center`}>
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between py-12 lg:py-0">
-                <div className="text-white max-w-2xl text-center lg:text-left mb-8 lg:mb-0">
-                  <h1 className="text-4xl sm:text-5xl font-bold mb-4 sm:mb-6">{slide.title}</h1>
-                  <p className="text-lg sm:text-xl mb-3 sm:mb-4">{slide.description}</p>
-                  <p className="text-base sm:text-lg mb-6 sm:mb-8 text-green-100">{slide.subDescription}</p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                    <Link
-                      to="/cargo"
-                      className="inline-block bg-white text-green-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-gray-100 transition-colors duration-300"
-                    >
-                      Get Started
-                    </Link>
-                    <Link
-                      to="/tracking"
-                      className="inline-block border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white/10 transition-colors duration-300"
-                    >
-                      Learn More
-                    </Link>
+            <div className={`${slide.color} h-full w-full relative`}> 
+              {/* Optional Texture Overlay */}
+              <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+              
+              <div className="relative max-w-7xl mx-auto px-6 lg:px-8 h-full flex items-center">
+                <div className="flex flex-col lg:flex-row items-center justify-between w-full py-16 lg:py-0">
+                  <div className="text-white max-w-xl text-center lg:text-left mb-10 lg:mb-0 z-10">
+                    <h1 className="text-4xl sm:text-6xl font-extrabold mb-6 leading-tight">
+                      {slide.title}
+                    </h1>
+                    <p className="text-xl mb-8 text-gray-300">
+                      {slide.description}
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                      <Link
+                        to="/tracking"
+                        className="inline-flex items-center justify-center bg-green-600 text-white w-full sm:w-auto px-8 py-4 rounded-none font-bold text-lg hover:bg-green-500 transition-all duration-300"
+                      >
+                        Start Tracking
+                      </Link>
+                      <Link
+                        to="/contact"
+                        className="inline-flex items-center justify-center border-2 border-white text-white w-full sm:w-auto px-8 py-4 rounded-none font-semibold text-lg hover:bg-white hover:text-black transition-colors duration-300"
+                      >
+                        Get a Quote
+                      </Link>
+                    </div>
                   </div>
-                </div>
-                <div className="text-6xl sm:text-7xl lg:text-8xl">
-                  {slide.image}
+                  {/* Large Icon for Desktop */}
+                  <div className="text-green-500 opacity-90 z-10 hidden lg:block">
+                    <slide.Icon className="w-64 h-64" aria-hidden="true" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         ))}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+
+        {/* Slider Dots */}
+        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
           {heroSlides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                index === currentSlide ? 'bg-white' : 'bg-white/50'
+              className={`h-2 transition-all duration-300 ${
+                index === currentSlide ? 'bg-green-500 w-12' : 'bg-gray-600 w-4'
               }`}
+              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
       </section>
-
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-4 sm:p-6">
-        {features.map((feature, index) => (
-          <Link
-            key={index}
-            to={feature.link}
-            className="bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300 hover:border-green-500 hover:border-2 flex flex-col items-center text-center"
-          >
-            <div className="text-3xl sm:text-4xl mb-3 sm:mb-4 bg-green-100 text-green-600 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center">
-              {feature.icon}
-            </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-              {feature.title}
-            </h2>
-            <p className="text-sm sm:text-base text-gray-600">{feature.description}</p>
-          </Link>
-        ))}
+      
+      {/* Features - Black Icons on White Cards */}
+      <section className="bg-white py-20 w-full">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-black mb-16">
+            Focused Tracking Solutions
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <Link
+                key={index}
+                to={feature.link}
+                className="group w-full bg-white border border-gray-200 p-8 flex flex-col items-center text-center transition-all duration-300 hover:border-green-600 hover:shadow-xl"
+              >
+                <div className="mb-6 p-4 bg-black rounded-full group-hover:bg-green-600 transition-colors duration-300">
+                  <feature.Icon className="w-8 h-8 text-white" aria-hidden="true" />
+                </div>
+                <h3 className="text-xl font-bold text-black mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600">{feature.description}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
-      <section className="bg-gray-50 py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-8 sm:mb-12">Our Services</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+      {/* Services - Gray Background for contrast */}
+      <section className="bg-gray-50 py-20 w-full">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-black mb-16">
+            Comprehensive Services
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {services.map((service, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md p-4 sm:p-6 flex flex-col items-center text-center">
-                <div className="text-3xl sm:text-4xl mb-3 sm:mb-4 bg-green-100 text-green-600 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center">
-                  {service.icon}
+              <div key={index} className="w-full bg-white shadow-lg p-10 border-t-4 border-green-600 hover:-translate-y-2 transition-transform duration-300">
+                <div className="mb-6">
+                  <service.Icon className="w-12 h-12 text-green-600" aria-hidden="true" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
+                <h3 className="text-2xl font-bold text-black mb-4">
                   {service.title}
                 </h3>
-                <p className="text-sm sm:text-base text-gray-600">{service.description}</p>
+                <p className="text-gray-600 leading-relaxed">
+                  {service.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-12 sm:py-16 mb-12 sm:mb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-8 sm:mb-12">How It Works</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+      {/* Workflow - White Background */}
+      <section className="bg-white py-20 w-full">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-black mb-16">
+            How It Works
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
             {workflow.map((step, index) => (
-              <div key={index} className="relative">
-                <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 h-full">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-600 text-white rounded-full flex items-center justify-center text-lg sm:text-xl font-bold mb-3 sm:mb-4">
-                    {step.step}
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-                    {step.title}
-                  </h3>
-                  <p className="text-sm sm:text-base text-gray-600">{step.description}</p>
+              <div key={index} className="relative group text-center">
+                <div className="w-16 h-16 mx-auto bg-black text-white rounded-full flex items-center justify-center text-2xl font-bold mb-6 ring-4 ring-gray-100 group-hover:bg-green-600 group-hover:ring-green-100 transition-all duration-300">
+                  {step.step}
                 </div>
+                <h3 className="text-lg font-bold text-black mb-2">
+                  {step.title}
+                </h3>
+                <p className="text-sm text-gray-500">{step.description}</p>
+                
+                {/* Connector Lines */}
                 {index < workflow.length - 1 && (
-                  <div className="hidden lg:block absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2">
-                    <div className="w-8 h-0.5 bg-green-600"></div>
-                  </div>
+                  <div className="hidden lg:block absolute top-8 left-[60%] w-[80%] h-[2px] bg-gray-200 -z-10"></div>
                 )}
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Final CTA - Green Background */}
+    <section className="py-20 w-full">
+    <div className="max-w-4xl mx-auto text-center px-6">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-6">
+            Ready to Optimize Your Logistics?
+        </h2>
+        <p className="text-xl text-gray-600 mb-10">
+            Join thousands of businesses who trust us with their global supply chain needs.
+        </p>
+        <Link
+            to="/tracking"
+            className="inline-block bg-black text-white px-10 py-4 font-bold text-lg rounded-lg shadow-xl hover:bg-gray-700 transition-colors duration-300 transform hover:scale-105"
+        >
+            Track Shipment Now
+        </Link>
+    </div>
+</section>
     </div>
   );
 };
 
-export default Home; 
+export default Home;

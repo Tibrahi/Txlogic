@@ -1,3 +1,12 @@
+/* In your main CSS file (index.css) */
+body {
+  margin: 0; /* REMOVE DEFAULT BROWSER MARGINS */
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  /* Optional: Set the background color here to match the dark hero section */
+  background-color: #1f2937; /* or whatever dark color you are using */
+}
 #root {
   width: 100%;
   min-height: 100vh;
