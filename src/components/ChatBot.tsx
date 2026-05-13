@@ -1,86 +1,92 @@
 import { useState, useEffect, useRef } from 'react';
-// Removed lucide-react import
+import axios from 'axios';
 
 interface Message {
   text: string;
   isUser: boolean;
   feedback?: 'like' | 'unlike' | 'sad' | 'not_satisfied' | null;
-  // Added options property for quick replies
-  options?: string[]; 
+  options?: string[];
 }
 
 interface UserInfo {
-  name: string; // Keeping this for later personalization, even if not collected immediately
+  name: string;
   preferredTracking: string;
   isFirstTime: boolean;
   contactShared: boolean;
 }
 
-// New type for theme
 type Theme = 'light' | 'dark';
 
-// --- SVG ICON DEFINITIONS ---
-
-// X Icon
+// SVG Icons
 const CloseIcon = (props: { className?: string }) => (
-    <svg className={props.className || "w-6 h-6"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
+  <svg className={props.className || "w-6 h-6"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
 );
 
-// Send Icon
 const SendIcon = (props: { className?: string }) => (
-    <svg className={props.className || "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        {/* FIX: Removed the duplicate strokeLinecap attribute */}
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-    </svg>
+  <svg className={props.className || "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+  </svg>
 );
 
-// Lightbulb Icon (for Light Mode toggle when in Dark Mode)
 const LightbulbIcon = (props: { className?: string }) => (
-    <svg className={props.className || "w-5 h-6"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19C9 20.1046 9.89543 21 11 21H13C14.1046 21 15 20.1046 15 19M12 4V7M12 17V20M16 10H19M5 10H8M21 12H19.5M4.5 12H3M17 14C17 16.7614 14.7614 19 12 19C9.23858 19 7 16.7614 7 14C7 11.2386 9.23858 9 12 9C14.7614 9 17 11.2386 17 14Z" />
-    </svg>
+  <svg className={props.className || "w-5 h-6"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19C9 20.1046 9.89543 21 11 21H13C14.1046 21 15 20.1046 15 19M12 4V7M12 17V20M16 10H19M5 10H8M21 12H19.5M4.5 12H3M17 14C17 16.7614 14.7614 19 12 19C9.23858 19 7 16.7614 7 14C7 11.2386 9.23858 9 12 9C14.7614 9 17 11.2386 17 14Z" />
+  </svg>
 );
 
-// Moon Icon (for Dark Mode toggle when in Light Mode)
 const MoonIcon = (props: { className?: string }) => (
-    <svg className={props.className || "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-    </svg>
+  <svg className={props.className || "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+  </svg>
 );
 
+const ChatIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+  </svg>
+);
+
+const ClearIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  </svg>
+);
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const ChatBot = () => {
-  // --- STATE ---
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isBotTyping, setIsBotTyping] = useState(false);
-  const [theme, setTheme] = useState<Theme>('light'); 
+  const [theme, setTheme] = useState<Theme>('light');
   const [userInfo, setUserInfo] = useState<UserInfo>({
-    name: 'User', 
+    name: 'User',
     preferredTracking: '',
     isFirstTime: true,
     contactShared: false
   });
-  const [step, setStep] = useState<'intro' | 'tracking' | 'chat'>('intro'); 
   const [showFeedback, setShowFeedback] = useState(false);
+  const [sessionId, setSessionId] = useState<string>('');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  // Define constants for quick reply options
+
+  // Quick reply options
   const INITIAL_OPTIONS = ['Track Shipment', 'General Question', 'Contact Support'];
   const TRACKING_OPTIONS = ['Vehicle', 'Package', 'Container'];
-  
-  // Define the default fallback message (used to trigger the main menu)
-  const FALLBACK_MESSAGE = `That's an interesting question! As a specialized tracking assistant, I can best help with questions about tracking IDs, shipment status, or TxLogic services. Can you tell me more about what you are looking for?`;
 
+  // Generate unique session ID
+  useEffect(() => {
+    if (!sessionId) {
+      setSessionId(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+    }
+  }, []);
 
-  // --- UI/UX EFFECTS ---
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }
+  };
 
   useEffect(() => {
     scrollToBottom();
@@ -92,104 +98,156 @@ const ChatBot = () => {
       setTimeout(() => {
         setIsBotTyping(false);
         setMessages([{
-          // Changed introductory text and added options
-          text: "Hello! I'm your TxLogic Tracking Assistant. How can I help you get started?",
+          text: "Hello! I'm your TxLogic Tracking Assistant. How can I help you today?",
           isUser: false,
-          options: INITIAL_OPTIONS // Initial quick choices
+          options: INITIAL_OPTIONS
         }]);
-        setUserInfo(prev => ({ ...prev, isFirstTime: false })); // Mark first time done after greeting
-      }, 1500);
+        setUserInfo(prev => ({ ...prev, isFirstTime: false }));
+      }, 800);
     }
-  }, [isOpen]); 
+  }, [isOpen]);
 
-  
   const toggleTheme = () => {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  // --- HANDLERS ---
-  
-  // Handler for all quick reply clicks
-  const handleQuickReply = (text: string) => {
-    // 1. Add user message
+  // Clear chat history from MongoDB
+  const clearChatHistory = async () => {
+    try {
+      if (sessionId) {
+        await axios.delete(`${API_BASE_URL}/chat/history/${sessionId}`);
+      }
+      setMessages([]);
+      setUserInfo({
+        name: 'User',
+        preferredTracking: '',
+        isFirstTime: true,
+        contactShared: false
+      });
+      setShowFeedback(false);
+      // Re-initialize with greeting
+      setIsBotTyping(true);
+      setTimeout(() => {
+        setIsBotTyping(false);
+        setMessages([{
+          text: "Hello! I'm your TxLogic Tracking Assistant. How can I help you today?",
+          isUser: false,
+          options: INITIAL_OPTIONS
+        }]);
+        setUserInfo(prev => ({ ...prev, isFirstTime: false }));
+      }, 500);
+    } catch (error) {
+      console.error('Error clearing chat history:', error);
+    }
+  };
+
+  // Get response from Gemini API
+  const getGeminiResponse = async (userMessage: string, conversationHistory: Message[]) => {
+    try {
+      const formattedHistory = conversationHistory.map(msg => ({
+        role: msg.isUser ? 'user' : 'assistant',
+        content: msg.text
+      }));
+
+      const response = await axios.post(`${API_BASE_URL}/chat`, {
+        message: userMessage,
+        conversationHistory: formattedHistory,
+        userInfo: userInfo
+      });
+
+      return response.data.response;
+    } catch (error) {
+      console.error('Gemini API Error:', error);
+      return "I apologize, but I'm having trouble processing your request right now. Please try again in a moment.";
+    }
+  };
+
+  // Save chat history to MongoDB
+  const saveChatHistory = async () => {
+    try {
+      if (sessionId && messages.length > 0) {
+        const formattedMessages = messages.map(msg => ({
+          role: msg.isUser ? 'user' : 'assistant',
+          content: msg.text
+        }));
+        
+        await axios.post(`${API_BASE_URL}/chat/history`, {
+          sessionId,
+          messages: formattedMessages,
+          userInfo
+        });
+      }
+    } catch (error) {
+      console.error('Error saving chat history:', error);
+    }
+  };
+
+  // Auto-save every 5 messages
+  useEffect(() => {
+    if (messages.length > 0 && messages.length % 5 === 0) {
+      saveChatHistory();
+    }
+  }, [messages]);
+
+  const handleQuickReply = async (text: string) => {
     setMessages(prev => [...prev, { text, isUser: true }]);
     setIsBotTyping(true);
 
-    // 2. Hide options on the message that was just replied to
+    // Remove options from previous bot message
     setMessages(prev => {
-        const newMessages = [...prev];
-        // Find the actual last bot message (where the options were displayed)
-        let indexToClear = newMessages.length - 1;
-        while (indexToClear >= 0 && newMessages[indexToClear].isUser) {
-            indexToClear--;
-        }
-
-        if (indexToClear >= 0) {
-            newMessages[indexToClear] = { ...newMessages[indexToClear], options: undefined };
-        }
-        return newMessages;
+      const newMessages = [...prev];
+      let indexToClear = newMessages.length - 2;
+      while (indexToClear >= 0 && newMessages[indexToClear].isUser) {
+        indexToClear--;
+      }
+      if (indexToClear >= 0) {
+        newMessages[indexToClear] = { ...newMessages[indexToClear], options: undefined };
+      }
+      return newMessages;
     });
 
-    // 3. Get bot response
-    setTimeout(() => {
+    // Update user info based on selection
+    if (text === 'Track Shipment') {
+      setUserInfo(prev => ({ ...prev, preferredTracking: 'general' }));
+    } else if (text === 'Contact Support') {
+      setUserInfo(prev => ({ ...prev, contactShared: true }));
+    }
+
+    setTimeout(async () => {
       setIsBotTyping(false);
-      const botResponse = getBotResponse(text);
+      const botResponse = await getGeminiResponse(text, messages);
       
       let newMessage: Message = { text: botResponse, isUser: false };
       
-      // If we transition to the tracking step, add the specific tracking options
-      if (step === 'tracking' && botResponse.includes('What type of items do you usually track')) {
-          newMessage.options = TRACKING_OPTIONS;
-      }
-      
-      // FIX: If the response is the fallback message, re-add the initial options AND reset step
-      if (botResponse === FALLBACK_MESSAGE) {
-          newMessage.options = INITIAL_OPTIONS;
-          setStep('intro'); // <--- Essential fix
+      // Show tracking options after "Track Shipment"
+      if (text === 'Track Shipment') {
+        newMessage.options = TRACKING_OPTIONS;
       }
       
       setMessages(prev => [...prev, newMessage]);
-      
-      // Only show general feedback after setup is complete (step is 'chat')
-      if (step === 'chat' && botResponse !== FALLBACK_MESSAGE) {
-        setShowFeedback(true);
-      }
-    }, 1500 + Math.random() * 500);
+      setShowFeedback(true);
+      saveChatHistory();
+    }, 1000 + Math.random() * 500);
   };
-  
-  // Updated handleSend to handle manual input after the initial choices
-  const handleSend = () => {
+
+  const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMessage = { text: input, isUser: true };
-    setMessages(prev => [...prev, userMessage]);
+    const userMessage = input;
+    setMessages(prev => [...prev, { text: userMessage, isUser: true }]);
     setInput('');
     setIsBotTyping(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsBotTyping(false);
-      const botResponse = getBotResponse(input);
+      const currentMessages = [...messages, { text: userMessage, isUser: true }];
+      const botResponse = await getGeminiResponse(userMessage, currentMessages);
       
       let newMessage: Message = { text: botResponse, isUser: false };
-      
-      // If we transition to the tracking step, add the specific tracking options
-      if (step === 'tracking' && botResponse.includes('What type of items do you usually track')) {
-          newMessage.options = TRACKING_OPTIONS;
-      }
-      
-      // FIX: If the response is the fallback message, re-add the initial options AND reset step
-      if (botResponse === FALLBACK_MESSAGE) {
-          newMessage.options = INITIAL_OPTIONS;
-          setStep('intro'); // <--- Essential fix
-      }
-      
       setMessages(prev => [...prev, newMessage]);
-      
-      // Only show feedback if it's not the initial fallback
-      if (botResponse !== FALLBACK_MESSAGE) {
-        setShowFeedback(true);
-      }
-    }, 1500 + Math.random() * 500);
+      setShowFeedback(true);
+      saveChatHistory();
+    }, 1000 + Math.random() * 500);
   };
 
   const handleFeedback = (feedback: 'like' | 'unlike' | 'sad' | 'not_satisfied') => {
@@ -208,207 +266,166 @@ const ChatBot = () => {
       setTimeout(() => {
         setIsBotTyping(false);
         setMessages(prev => [...prev, {
-          text: "I'm sorry I couldn't help you effectively. Would you like to speak with a human representative? You can reach us at support@txlogic.com or call +250788888888. You can also visit our website at TXLOGIC.",
+          text: "I'm sorry I couldn't help effectively. Would you like to speak with a human? Contact us at support@txlogic.com or call +250788888888.",
           isUser: false
         }]);
         setUserInfo(prev => ({ ...prev, contactShared: true }));
-      }, 1500);
+      }, 800);
     }
   };
 
-  // --- BOT LOGIC (IMAGINATION/BROAD TRAINING) ---
-  const getBotResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-    
-    // Initial Choice Handling (intro step)
-    if (step === 'intro') {
-        if (input.includes('track shipment')) {
-            setStep('tracking');
-            // This response triggers the second set of quick replies in handleQuickReply/handleSend
-            return `Got it! To help you track, I need to know: What type of items do you usually track? (vehicles, packages, or containers)`;
-        }
-        if (input.includes('general question')) {
-            setStep('chat'); // Skip the tracking setup
-            return "Sure! I can answer questions about TxLogic services, location, or capabilities. What's your question?";
-        }
-        if (input.includes('contact support')) {
-             setStep('chat'); 
-             setUserInfo(prev => ({ ...prev, contactShared: true }));
-             return "You can reach our human representatives at support@txlogic.com or call +250788888888. You can also visit our website at TXLOGIC.";
-        }
-        // If they bypass initial buttons (shouldn't happen with quick reply), fallback to generic and show buttons
-        return FALLBACK_MESSAGE;
-    }
-
-
-    // Tracking Type Setup (tracking step)
-    if (step === 'tracking') {
-      if (input.includes('vehicle') || input.includes('car')) {
-        setUserInfo(prev => ({ ...prev, preferredTracking: 'vehicle' }));
-        setStep('chat');
-        return `Great! I see you're interested in **vehicle tracking**. I can help you track vehicles using their ID (e.g., VH123456). How can I assist you today?`;
-      }
-      if (input.includes('package') || input.includes('parcel')) {
-        setUserInfo(prev => ({ ...prev, preferredTracking: 'package' }));
-        setStep('chat');
-        return `Perfect! I can help you track **packages** using their ID (e.g., PKG123456). What would you like to know about package tracking?`;
-      }
-      if (input.includes('container') || input.includes('cargo')) {
-        setUserInfo(prev => ({ ...prev, preferredTracking: 'container' }));
-        setStep('chat');
-        return `Excellent! I can help you track **containers** using their ID (e.g., CNT123456). How can I help you with container tracking?`;
-      }
-      // If user is in tracking step but types something else, re-ask with the menu 
-      return `I'm not sure what kind of item you want to track. Please use the buttons or type one: vehicles, packages, or containers.`;
-    }
-
-    // --- General/Broad Reply Training (when step is 'chat') ---
-
-    // 1. Company/Owner Information
-    if (input.includes('who made you') || input.includes('who is tuyizere ibrahim') || input.includes('owner')) {
-        return "I was created by Tuyizere Ibrahim, the owner of TxLogic. My purpose is to assist you with all your logistics tracking questions.";
-    }
-
-    // 2. Capabilities
-    if (input.includes('what can you do') || input.includes('what are you')) {
-        return `I am the TxLogic Assistant. I specialize in real-time tracking support for **vehicles**, **packages**, and **containers**. You can ask me for tracking status, service information, or general questions about TxLogic!`;
-    }
-    
-    // 3. Default/Fallback 
-    return FALLBACK_MESSAGE;
-  };
-
-  // Typing Indicator Component (Styling adjusted for theme)
+  // Typing Indicator
   const TypingIndicator = () => (
-    <div className={`flex justify-start items-center space-x-1.5 p-3 rounded-xl max-w-[80%] shadow-md ${
-        theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'
+    <div className={`flex justify-start items-center space-x-1.5 p-3 rounded-2xl max-w-[80%] ${
+      theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'
     }`}>
-      <div className={`dot animate-bounce-slow h-2 w-2 rounded-full ${
-        theme === 'light' ? 'bg-gray-500' : 'bg-gray-400'
-      }`} style={{ animationDelay: '0s' }}></div>
-      <div className={`dot animate-bounce-slow h-2 w-2 rounded-full ${
-        theme === 'light' ? 'bg-gray-500' : 'bg-gray-400'
-      }`} style={{ animationDelay: '0.2s' }}></div>
-      <div className={`dot animate-bounce-slow h-2 w-2 rounded-full ${
-        theme === 'light' ? 'bg-gray-500' : 'bg-gray-400'
-      }`} style={{ animationDelay: '0.4s' }}></div>
-      {/* CSS remains the same */}
+      <div className={`h-2 w-2 rounded-full animate-bounce ${
+        theme === 'light' ? 'bg-gray-400' : 'bg-gray-300'
+      }`} style={{ animationDelay: '0s', animationDuration: '0.6s' }}></div>
+      <div className={`h-2 w-2 rounded-full animate-bounce ${
+        theme === 'light' ? 'bg-gray-400' : 'bg-gray-300'
+      }`} style={{ animationDelay: '0.2s', animationDuration: '0.6s' }}></div>
+      <div className={`h-2 w-2 rounded-full animate-bounce ${
+        theme === 'light' ? 'bg-gray-400' : 'bg-gray-300'
+      }`} style={{ animationDelay: '0.4s', animationDuration: '0.6s' }}></div>
     </div>
   );
-  
-  // Dynamic Chat Bubble Classes
-  const getMessageClasses = (message: Message) => {
-    if (message.isUser) {
-        // User (Consistent Blue)
-        return 'bg-blue-600 text-white rounded-br-none';
-    } else {
-        // Bot (Theme-dependent)
-        if (theme === 'light') {
-            return 'bg-white text-gray-800 rounded-tl-none border border-gray-200';
-        } else {
-            return 'bg-gray-800 text-gray-50 rounded-tl-none border border-gray-700';
-        }
-    }
-  }
 
-  // Root theme classes
+  // Message bubble styling
+  const getMessageClasses = (isUser: boolean) => {
+    if (isUser) {
+      return 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-md shadow-sm';
+    } else {
+      if (theme === 'light') {
+        return 'bg-white text-gray-800 rounded-bl-md border border-gray-100 shadow-sm';
+      } else {
+        return 'bg-gray-800 text-gray-100 rounded-bl-md border border-gray-700 shadow-sm';
+      }
+    }
+  };
+
+  // Theme classes
   const rootClasses = theme === 'light' 
-    ? 'bg-white text-gray-800' 
-    : 'bg-gray-900 text-white border-gray-700';
+    ? 'bg-white text-gray-800 border-gray-200' 
+    : 'bg-gray-900 text-gray-100 border-gray-700';
   
-  const bodyBgClasses = theme === 'light' ? 'bg-gray-50' : 'bg-gray-900';
-  const inputBgClasses = theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-700 text-white';
+  const bodyBgClasses = theme === 'light' ? 'bg-gradient-to-b from-gray-50 to-white' : 'bg-gradient-to-b from-gray-900 to-gray-800';
+  const inputBgClasses = theme === 'light' 
+    ? 'bg-white border-gray-200 text-gray-800 placeholder-gray-400' 
+    : 'bg-gray-800 border-gray-600 text-white placeholder-gray-400';
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-teal-500 text-white p-4 rounded-full shadow-2xl hover:bg-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-300 transition-transform duration-200 transform hover:scale-110"
+          className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-300 transform hover:scale-105"
           aria-label="Open Chatbot"
         >
-          {/* Default Chat Icon */}
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-          </svg>
+          <ChatIcon />
         </button>
       ) : (
-        <div className={`rounded-xl shadow-2xl w-[calc(100vw-2rem)] sm:w-96 h-[calc(100vh-8rem)] sm:h-[600px] flex flex-col border overflow-hidden ${rootClasses}`}>
+        <div className={`rounded-2xl shadow-2xl w-[calc(100vw-2rem)] sm:w-[380px] md:w-[420px] h-[calc(100vh-8rem)] sm:h-[580px] flex flex-col border overflow-hidden ${rootClasses} transition-all duration-300`}>
           
           {/* Header */}
-          <div className="p-4 bg-teal-500 text-white flex justify-between items-center shadow-md">
-            <div className="flex items-center">
-              <span className="relative flex h-3 w-3 mr-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-400"></span>
-              </span>
-              <h3 className="text-lg font-semibold">TxLogic Assistant</h3>
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 flex justify-between items-center shadow-md">
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <span className="flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-400"></span>
+                </span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-base">TxLogic Assistant</h3>
+                <p className="text-xs text-blue-100">Powered by AI</p>
+              </div>
             </div>
-            <div className="flex space-x-2 items-center">
-                {/* Theme Toggle Button */}
-                <button
-                    onClick={toggleTheme}
-                    className="p-2 rounded-full text-white bg-teal-600 hover:bg-teal-700 transition-colors"
-                    aria-label={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
-                >
-                    {theme === 'light' ? <MoonIcon /> : <LightbulbIcon />}
-                </button>
-                {/* Close Button */}
-                <button
-                    onClick={() => setIsOpen(false)}
-                    className="p-2 rounded-full text-white bg-teal-600 hover:text-black hover:bg-white transition-colors"
-                    aria-label="Close Chatbot"
-                >
-                    <CloseIcon />
-                </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={clearChatHistory}
+                className="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+                aria-label="Clear Chat"
+                title="Clear Chat"
+              >
+                <ClearIcon />
+              </button>
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+                aria-label={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+              >
+                {theme === 'light' ? <MoonIcon /> : <LightbulbIcon />}
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+                aria-label="Close Chatbot"
+              >
+                <CloseIcon />
+              </button>
             </div>
           </div>
           
           {/* Message Area */}
           <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${bodyBgClasses}`}>
             {messages.map((message, index) => (
-              <div key={index} className="space-y-1">
-                <div
-                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[85%] sm:max-w-[75%] px-4 py-3 text-sm rounded-2xl shadow-md ${getMessageClasses(message)}`}
-                  >
-                    {message.text}
+              <div key={index} className="space-y-2">
+                <div className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`flex items-end space-x-2 max-w-[85%] ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                    {/* Avatar */}
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      message.isUser 
+                        ? 'bg-gradient-to-br from-blue-400 to-blue-600 text-white' 
+                        : theme === 'light' 
+                          ? 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600' 
+                          : 'bg-gradient-to-br from-gray-700 to-gray-800 text-gray-300'
+                    }`}>
+                      {message.isUser ? <span className="text-xs font-semibold">You</span> : <span className="text-xs font-semibold">AI</span>}
+                    </div>
+                    
+                    {/* Message Bubble */}
+                    <div className={`px-4 py-3 text-sm rounded-2xl ${getMessageClasses(message.isUser)}`}>
+                      <p className="leading-relaxed">{message.text}</p>
+                    </div>
                   </div>
                 </div>
+                
                 {/* Quick Reply Options */}
-                {/* Show quick replies only for the last message from the bot that has options */}
                 {!message.isUser && message.options && index === messages.length - 1 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                        {message.options.map((option, optIndex) => (
-                            <button
-                                key={optIndex}
-                                onClick={() => handleQuickReply(option)}
-                                className="px-4 py-2 text-xs font-medium rounded-full bg-teal-100 text-teal-800 hover:bg-teal-200 transition-colors shadow-sm"
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
+                  <div className="flex flex-wrap gap-2 ml-10">
+                    {message.options.map((option, optIndex) => (
+                      <button
+                        key={optIndex}
+                        onClick={() => handleQuickReply(option)}
+                        className={`px-4 py-2 text-xs font-medium rounded-full transition-all duration-200 transform hover:scale-105 ${
+                          theme === 'light' 
+                            ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200' 
+                            : 'bg-gray-700 text-blue-300 hover:bg-gray-600 border border-gray-600'
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
                 )}
+                
                 {/* Feedback Display */}
                 {!message.isUser && message.feedback && (
-                  <div className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} text-xs ml-4 italic ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>
-                    {message.feedback === 'like' && '👍 Thanks for the positive feedback!'}
-                    {message.feedback === 'unlike' && '👎 Duly noted.'}
-                    {message.feedback === 'sad' && '😢 Feedback submitted for review.'}
-                    {message.feedback === 'not_satisfied' && '📞 Connecting you to support now.'}
+                  <div className={`text-xs ml-10 italic ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {message.feedback === 'like' && '👍 Thanks for the feedback!'}
+                    {message.feedback === 'unlike' && '👎 Feedback noted.'}
+                    {message.feedback === 'sad' && '😢 We\'ll improve.'}
+                    {message.feedback === 'not_satisfied' && '📞 Connecting to support...'}
                   </div>
                 )}
               </div>
             ))}
             
-            {/* Typing Indicator */}
             {isBotTyping && (
-                <div className="flex justify-start">
-                    <TypingIndicator />
-                </div>
+              <div className="flex justify-start ml-10">
+                <TypingIndicator />
+              </div>
             )}
 
             <div ref={messagesEndRef} />
@@ -416,32 +433,32 @@ const ChatBot = () => {
 
           {/* Feedback Section */}
           {showFeedback && (
-            <div className={`px-4 py-3 border-t ${theme === 'light' ? 'bg-white' : 'bg-gray-800 border-gray-700'}`}>
-              <p className={`text-sm mb-2 ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>Was this helpful?</p>
+            <div className={`px-4 py-3 border-t ${theme === 'light' ? 'bg-white border-gray-100' : 'bg-gray-800 border-gray-700'}`}>
+              <p className={`text-xs mb-2 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Was this helpful?</p>
               <div className="flex space-x-3">
-                <button onClick={() => handleFeedback('like')} className="text-xl hover:scale-110 transition-transform" title="Helpful">👍</button>
-                <button onClick={() => handleFeedback('unlike')} className="text-xl hover:scale-110 transition-transform" title="Not helpful">👎</button>
-                <button onClick={() => handleFeedback('sad')} className="text-xl hover:scale-110 transition-transform" title="Confusing">😢</button>
-                <button onClick={() => handleFeedback('not_satisfied')} className="text-xl hover:scale-110 transition-transform" title="Need Human">📞</button>
+                <button onClick={() => handleFeedback('like')} className="text-xl hover:scale-125 transition-transform" title="Helpful">👍</button>
+                <button onClick={() => handleFeedback('unlike')} className="text-xl hover:scale-125 transition-transform" title="Not helpful">👎</button>
+                <button onClick={() => handleFeedback('sad')} className="text-xl hover:scale-125 transition-transform" title="Confusing">😢</button>
+                <button onClick={() => handleFeedback('not_satisfied')} className="text-xl hover:scale-125 transition-transform" title="Need Human">📞</button>
               </div>
             </div>
           )}
 
           {/* Input Area */}
-          <div className={`p-4 border-t ${theme === 'light' ? 'bg-white' : 'bg-gray-800 border-gray-700'}`}>
+          <div className={`p-4 border-t ${theme === 'light' ? 'bg-white border-gray-100' : 'bg-gray-800 border-gray-700'}`}>
             <div className="flex space-x-3">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Ask me about tracking..."
-                className={`flex-1 border rounded-full px-5 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow ${inputBgClasses}`}
+                placeholder="Type your message..."
+                className={`flex-1 border rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${inputBgClasses}`}
                 disabled={isBotTyping}
               />
               <button
                 onClick={() => handleSend()}
-                className="bg-teal-500 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:bg-gray-400 transition-colors"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                 disabled={!input.trim() || isBotTyping}
                 aria-label="Send Message"
               >
