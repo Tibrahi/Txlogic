@@ -78,6 +78,7 @@ export interface ContainerEvent {
   status: string;
   vessel?: string;
   voyage?: string;
+  description?: string;
 }
 
 export interface CargoShipment {
