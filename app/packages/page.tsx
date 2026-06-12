@@ -179,3 +179,47 @@ export default function PackagesPage() {
       {/* Search */}
       <div className="mb-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <div className="relative max-w-md">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <input
+            type="text"
+            placeholder="Search by tracking number or sender..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-border text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:shadow-[0_0_15px_rgba(139,92,246,0.1)] transition-all duration-300"
+          />
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-2 mb-6 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+        {['all', 'in_transit', 'delivered', 'pending', 'loading', 'delayed'].map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`text-xs px-3 py-1.5 rounded-lg transition-all duration-300 ${
+              filter === f
+                ? 'bg-purple-500/10 text-purple-400 border border-purple-500/30'
+                : 'text-gray-500 hover:text-gray-300 border border-transparent hover:border-white/10'
+            }`}
+          >
+            {f === 'all' ? 'All' : f.replace('_', ' ')}
+          </button>
+        ))}
+      </div>
+
+      {/* Package Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        {filtered.map((pkg, i) => (
+          <PackageCard key={pkg.id} pkg={pkg} index={i} />
+        ))}
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="text-center py-16 animate-scale-in">
+          <div className="text-4xl mb-4">📭</div>
+          <p className="text-gray-500">No packages match your search</p>
+        </div>
+      )}
+    </div>
+  );
+}
