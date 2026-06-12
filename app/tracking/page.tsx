@@ -99,7 +99,6 @@ export default function TrackingPage() {
     'Addis Ababa': { lat: 9.0250, lng: 38.7469 },
     'Dodoma': { lat: -6.1630, lng: 35.7516 },
     'Luanda': { lat: -8.8390, lng: 13.2894 },
-    'Mwanza': { lat: -2.5489, lng: 32.8986 },
   };
 
   return (
