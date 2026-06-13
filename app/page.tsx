@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { mockTrucks, mockPackages, mockContainers, mockCargo } from '@/lib/data';
+import StatusDot from '@/app/components/StatusDot';
+import { getEntityName, formatCurrency } from '@/lib/utils';
 
 function AnimatedCounter({ target, duration = 2 }: { target: number; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -23,33 +25,23 @@ function AnimatedCounter({ target, duration = 2 }: { target: number; duration?: 
   return <span>{count.toLocaleString()}</span>;
 }
 
-function StatusDot({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    active: 'bg-green-400',
-    in_transit: 'bg-cyan-400',
-    delivered: 'bg-emerald-500',
-    delayed: 'bg-amber-400',
-    maintenance: 'bg-gray-500',
-    pending: 'bg-blue-400',
-    loading: 'bg-purple-400',
-    idle: 'bg-slate-400',
-    unloading: 'bg-orange-400',
-  };
-  return (
-    <span className={`inline-block w-2 h-2 rounded-full ${colors[status] || 'bg-gray-400'} animate-blink`} />
-  );
-}
-
 export default function Dashboard() {
   const [time, setTime] = useState(new Date());
   const activeTrucks = mockTrucks.filter(t => t.status === 'active' || t.status === 'in_transit');
   const delayedItems = [...mockTrucks, ...mockPackages, ...mockContainers, ...mockCargo].filter(i => i.status === 'delayed');
-  const deliveredItems = [...mockPackages, ...mockContainers].filter(i => i.status === 'delivered');
+  const totalValue = mockCargo.reduce((sum, c) => sum + c.value, 0);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const heroStats = [
+    { label: 'Active Vehicles', value: activeTrucks.length, icon: '🚛', color: 'from-cyan-500/20 to-cyan-500/5', borderColor: 'border-cyan-500/20', href: '/trucks' },
+    { label: 'Packages Tracked', value: mockPackages.length, icon: '📦', color: 'from-purple-500/20 to-purple-500/5', borderColor: 'border-purple-500/20', href: '/packages' },
+    { label: 'Containers at Sea', value: mockContainers.filter(c => c.status === 'in_transit').length, icon: '🚢', color: 'from-blue-500/20 to-blue-500/5', borderColor: 'border-blue-500/20', href: '/containers' },
+    { label: 'Cargo Shipments', value: mockCargo.length, icon: '✈️', color: 'from-amber-500/20 to-amber-500/5', borderColor: 'border-amber-500/20', href: '/cargo' },
+  ];
 
   return (
     <div className="p-6 lg:p-8 max-w-[1600px] mx-auto">
@@ -76,13 +68,8 @@ export default function Dashboard() {
 
       {/* Hero Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-children">
-        {[
-          { label: 'Active Vehicles', value: activeTrucks.length, icon: '🚛', color: 'from-cyan-500/20 to-cyan-500/5', borderColor: 'border-cyan-500/20', href: '/trucks' },
-          { label: 'Packages Tracked', value: mockPackages.length, icon: '📦', color: 'from-purple-500/20 to-purple-500/5', borderColor: 'border-purple-500/20', href: '/packages' },
-          { label: 'Containers at Sea', value: mockContainers.filter(c => c.status === 'in_transit').length, icon: '🚢', color: 'from-blue-500/20 to-blue-500/5', borderColor: 'border-blue-500/20', href: '/containers' },
-          { label: 'Cargo Shipments', value: mockCargo.length, icon: '✈️', color: 'from-amber-500/20 to-amber-500/5', borderColor: 'border-amber-500/20', href: '/cargo' },
-        ].map((stat) => (
-          <Link key={stat.label} href={stat.href}>
+        {heroStats.map((stat) => (
+          <Link href={stat.href} key={stat.label}>
             <div className={`animate-slide-up group relative p-5 rounded-2xl bg-gradient-to-br ${stat.color} border ${stat.borderColor} hover:scale-[1.02] transition-all duration-300 cursor-pointer hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]`}>
               <div className="text-2xl mb-2 group-hover:animate-float">{stat.icon}</div>
               <div className="text-3xl font-bold text-white mb-1">
@@ -106,7 +93,7 @@ export default function Dashboard() {
             <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">+12.4% this week</span>
           </div>
           <div className="text-4xl font-bold text-white mb-4">
-            $<AnimatedCounter target={3475000} duration={3} />
+            $<AnimatedCounter target={totalValue} duration={3} />
           </div>
           {/* Mini chart simulation */}
           <div className="flex items-end gap-1 h-16">
@@ -136,7 +123,7 @@ export default function Dashboard() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-medium text-white truncate">
-                    {'name' in item ? (item as typeof mockTrucks[0]).name : 'trackingNumber' in item ? (item as typeof mockPackages[0]).trackingNumber : 'containerNumber' in item ? (item as typeof mockContainers[0]).containerNumber : (item as typeof mockCargo[0]).shipmentNumber}
+                    {getEntityName(item as Record<string, unknown>)}
                   </p>
                   <p className="text-[10px] text-gray-500 mt-0.5">Delayed — {item.lastUpdate}</p>
                 </div>
@@ -153,7 +140,9 @@ export default function Dashboard() {
         <div className="p-6 rounded-2xl glass animate-slide-up" style={{ animationDelay: '0.5s' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Live Fleet</h3>
-            <Link href="/trucks" className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">View all →</Link>
+            <Link href="/trucks">
+              <span className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">View all →</span>
+            </Link>
           </div>
           <div className="space-y-3">
             {mockTrucks.slice(0, 4).map((truck, i) => (
@@ -183,7 +172,9 @@ export default function Dashboard() {
         <div className="p-6 rounded-2xl glass animate-slide-up" style={{ animationDelay: '0.6s' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Recent Packages</h3>
-            <Link href="/packages" className="text-xs text-purple-400 hover:text-purple-300 transition-colors">View all →</Link>
+            <Link href="/packages">
+              <span className="text-xs text-purple-400 hover:text-purple-300 transition-colors">View all →</span>
+            </Link>
           </div>
           <div className="space-y-3">
             {mockPackages.slice(0, 4).map((pkg, i) => (
@@ -221,7 +212,9 @@ export default function Dashboard() {
         <div className="p-6 rounded-2xl glass animate-slide-up" style={{ animationDelay: '0.7s' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Container Fleet</h3>
-            <Link href="/containers" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">View all →</Link>
+            <Link href="/containers">
+              <span className="text-xs text-blue-400 hover:text-blue-300 transition-colors">View all →</span>
+            </Link>
           </div>
           <div className="space-y-3">
             {mockContainers.slice(0, 4).map((cnt, i) => (
@@ -256,6 +249,13 @@ export default function Dashboard() {
         <div className="p-6 rounded-2xl glass animate-slide-up" style={{ animationDelay: '0.8s' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Cargo Shipments</h3>
+            <Link href="/cargo">
+              <span className="text-xs text-amber-400 hover:text-amber-300 transition-colors">View all →</span>
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {mockCargo.slice(0, 4).map((crg, i) => (
+              <Link key={crg.id} href="/cargo">
             <Link href="/cargo" className="text-xs text-amber-400 hover:text-amber-300 transition-colors">View all →</Link>
           </div>
           <div className="space-y-3">
