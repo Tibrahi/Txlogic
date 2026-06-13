@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { mockTrucks, mockPackages, mockContainers, mockCargo } from '@/lib/data';
 import StatusDot from '@/app/components/StatusDot';
+import NavLink from '@/app/components/NavLink';
 import { getEntityName, formatCurrency } from '@/lib/utils';
 
 function AnimatedCounter({ target, duration = 2 }: { target: number; duration?: number }) {
@@ -69,18 +69,16 @@ export default function Dashboard() {
       {/* Hero Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-children">
         {heroStats.map((stat) => (
-          <Link href={stat.href} key={stat.label}>
-            <a className={`block animate-slide-up group relative p-5 rounded-2xl bg-gradient-to-br ${stat.color} border ${stat.borderColor} hover:scale-[1.02] transition-all duration-300 cursor-pointer hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]`}>
-              <div className="text-2xl mb-2 group-hover:animate-float">{stat.icon}</div>
-              <div className="text-3xl font-bold text-white mb-1">
-                <AnimatedCounter target={stat.value} />
-              </div>
-              <div className="text-xs text-gray-400 uppercase tracking-wider">{stat.label}</div>
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </div>
-            </a>
-          </Link>
+          <NavLink href={stat.href} key={stat.label} className={`block animate-slide-up group relative p-5 rounded-2xl bg-gradient-to-br ${stat.color} border ${stat.borderColor} hover:scale-[1.02] transition-all duration-300 cursor-pointer hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]`}>
+            <div className="text-2xl mb-2 group-hover:animate-float">{stat.icon}</div>
+            <div className="text-3xl font-bold text-white mb-1">
+              <AnimatedCounter target={stat.value} />
+            </div>
+            <div className="text-xs text-gray-400 uppercase tracking-wider">{stat.label}</div>
+            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+              <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </div>
+          </NavLink>
         ))}
       </div>
 
@@ -140,14 +138,11 @@ export default function Dashboard() {
         <div className="p-6 rounded-2xl glass animate-slide-up" style={{ animationDelay: '0.5s' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Live Fleet</h3>
-            <Link href="/trucks">
-              <a className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">View all →</a>
-            </Link>
+            <NavLink href="/trucks" className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">View all →</NavLink>
           </div>
           <div className="space-y-3">
             {mockTrucks.slice(0, 4).map((truck, i) => (
-              <Link key={truck.id} href="/trucks">
-                <a className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 group" style={{ animationDelay: `${0.6 + i * 0.1}s` }}>
+              <NavLink key={truck.id} href="/trucks" className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 group" style={{ animationDelay: `${0.6 + i * 0.1}s` }}>
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-cyan-500/20 flex items-center justify-center text-lg group-hover:animate-float">
                     🚛
                   </div>
@@ -162,8 +157,7 @@ export default function Dashboard() {
                     <div className="text-xs font-mono text-cyan-400">{truck.speed} km/h</div>
                     <div className="text-[10px] text-gray-600">ETA {truck.ETA}</div>
                   </div>
-                </a>
-              </Link>
+                </NavLink>
             ))}
           </div>
         </div>
@@ -172,14 +166,11 @@ export default function Dashboard() {
         <div className="p-6 rounded-2xl glass animate-slide-up" style={{ animationDelay: '0.6s' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Recent Packages</h3>
-            <Link href="/packages">
-              <a className="text-xs text-purple-400 hover:text-purple-300 transition-colors">View all →</a>
-            </Link>
+            <NavLink href="/packages" className="text-xs text-purple-400 hover:text-purple-300 transition-colors">View all →</NavLink>
           </div>
           <div className="space-y-3">
             {mockPackages.slice(0, 4).map((pkg, i) => (
-              <Link key={pkg.id} href="/packages">
-                <a className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 group" style={{ animationDelay: `${0.7 + i * 0.1}s` }}>
+              <NavLink key={pkg.id} href="/packages" className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 group" style={{ animationDelay: `${0.7 + i * 0.1}s` }}>
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/20 flex items-center justify-center text-lg group-hover:animate-float">
                     📦
                   </div>
@@ -199,8 +190,7 @@ export default function Dashboard() {
                     </div>
                     <div className="text-[10px] text-gray-600 mt-1">{pkg.progress}%</div>
                   </div>
-                </a>
-              </Link>
+                </NavLink>
             ))}
           </div>
         </div>
@@ -212,14 +202,11 @@ export default function Dashboard() {
         <div className="p-6 rounded-2xl glass animate-slide-up" style={{ animationDelay: '0.7s' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Container Fleet</h3>
-            <Link href="/containers">
-              <a className="text-xs text-blue-400 hover:text-blue-300 transition-colors">View all →</a>
-            </Link>
+            <NavLink href="/containers" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">View all →</NavLink>
           </div>
           <div className="space-y-3">
             {mockContainers.slice(0, 4).map((cnt, i) => (
-              <Link key={cnt.id} href="/containers">
-                <a className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 group" style={{ animationDelay: `${0.8 + i * 0.1}s` }}>
+              <NavLink key={cnt.id} href="/containers" className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 group" style={{ animationDelay: `${0.8 + i * 0.1}s` }}>
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20 flex items-center justify-center text-lg group-hover:animate-float">
                     🚢
                   </div>
@@ -239,8 +226,7 @@ export default function Dashboard() {
                     </div>
                     <div className="text-[10px] text-gray-600 mt-1">{cnt.progress}%</div>
                   </div>
-                </a>
-              </Link>
+                </NavLink>
             ))}
           </div>
         </div>
@@ -249,14 +235,11 @@ export default function Dashboard() {
         <div className="p-6 rounded-2xl glass animate-slide-up" style={{ animationDelay: '0.8s' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Cargo Shipments</h3>
-            <Link href="/cargo">
-              <a className="text-xs text-amber-400 hover:text-amber-300 transition-colors">View all →</a>
-            </Link>
+            <NavLink href="/cargo" className="text-xs text-amber-400 hover:text-amber-300 transition-colors">View all →</NavLink>
           </div>
           <div className="space-y-3">
             {mockCargo.slice(0, 4).map((crg, i) => (
-              <Link key={crg.id} href="/cargo">
-                <a className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 group" style={{ animationDelay: `${0.9 + i * 0.1}s` }}>
+              <NavLink key={crg.id} href="/cargo" className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all duration-300 group" style={{ animationDelay: `${0.9 + i * 0.1}s` }}>
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/20 flex items-center justify-center text-lg group-hover:animate-float">
                     ✈️
                   </div>
@@ -271,8 +254,7 @@ export default function Dashboard() {
                     <div className="text-xs font-mono text-amber-400">{formatCurrency(crg.value)}</div>
                     <div className="text-[10px] text-gray-600">{crg.weight}t</div>
                   </div>
-                </a>
-              </Link>
+                </NavLink>
             ))}
           </div>
         </div>

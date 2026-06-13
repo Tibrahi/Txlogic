@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { mockTrucks, mockPackages, mockContainers, mockCargo } from '@/lib/data';
-import Link from 'next/link';
+import NavLink from '@/app/components/NavLink';
 
 type Entity = {
   id: string;
@@ -106,7 +106,7 @@ export default function TrackingPage() {
       {/* Header */}
       <div className="mb-6 animate-slide-up">
         <div className="flex items-center gap-2 mb-2">
-          <Link href="/" className="text-xs text-gray-500 hover:text-cyan-400 transition-colors">Dashboard</Link>
+          <NavLink href="/" className="text-xs text-gray-500 hover:text-cyan-400 transition-colors">Dashboard</NavLink>
           <span className="text-xs text-gray-600">/</span>
           <span className="text-xs text-gray-300">Live Tracking</span>
         </div>
@@ -291,12 +291,12 @@ export default function TrackingPage() {
                     <p className="text-white font-mono text-[10px]">{selectedEntity.lng.toFixed(4)}</p>
                   </div>
                 </div>
-                <Link
-                  href={selectedEntity.type === 'truck' ? '/trucks' : selectedEntity.type === 'package' ? '/packages' : selectedEntity.type === 'container' ? '/containers' : '/cargo'}
-                  className="block text-center text-[11px] text-cyan-400 hover:text-cyan-300 transition-colors py-2 border-t border-white/5"
-                >
-                  View full details →
-                </Link>
+          <NavLink
+            href={selectedEntity.type === 'truck' ? '/trucks' : selectedEntity.type === 'package' ? '/packages' : selectedEntity.type === 'container' ? '/containers' : '/cargo'}
+            className="block text-center text-[11px] text-cyan-400 hover:text-cyan-300 transition-colors py-2 border-t border-white/5"
+          >
+            View full details →
+          </NavLink>
               </div>
             ) : (
               <div className="text-center py-8 text-gray-600">

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import NavLink from './NavLink';
 
 interface PageHeaderProps {
   title: string;
@@ -16,11 +16,9 @@ export default function PageHeader({ title, subtitle, breadcrumbs, actions }: Pa
             <span key={i} className="flex items-center gap-2">
               {i > 0 && <span className="text-xs text-gray-600">/</span>}
               {crumb.href ? (
-                <Link href={crumb.href}>
-                  <a className={`text-xs text-gray-500 hover:text-cyan-400 transition-colors`}>
-                    {crumb.label}
-                  </a>
-                </Link>
+                <NavLink href={crumb.href} className="text-xs text-gray-500 hover:text-cyan-400 transition-colors">
+                  {crumb.label}
+                </NavLink>
               ) : (
                 <span className="text-xs text-gray-300">{crumb.label}</span>
               )}
