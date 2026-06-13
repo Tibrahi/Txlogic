@@ -72,11 +72,11 @@ export function formatWeight(value: number): string {
 }
 
 /** Get the display name/identifier for any entity type */
-export function getEntityName(item: Record<string, unknown>): string {
-  if ('name' in item) return item.name as string;
-  if ('trackingNumber' in item) return item.trackingNumber as string;
-  if ('containerNumber' in item) return item.containerNumber as string;
-  if ('shipmentNumber' in item) return item.shipmentNumber as string;
+export function getEntityName(item: { name?: string; trackingNumber?: string; containerNumber?: string; shipmentNumber?: string }): string {
+  if (item.name) return item.name;
+  if (item.trackingNumber) return item.trackingNumber;
+  if (item.containerNumber) return item.containerNumber;
+  if (item.shipmentNumber) return item.shipmentNumber;
   return 'Unknown';
 }
 

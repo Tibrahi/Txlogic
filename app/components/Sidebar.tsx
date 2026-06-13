@@ -66,12 +66,12 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`group flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 relative overflow-hidden ${
+            >
+              <a className={`group flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 relative overflow-hidden ${
                 isActive
                   ? 'bg-cyan-500/10 text-cyan-400'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
+              }`}>
               {isActive && (
                 <div className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-cyan-400 to-purple-500 rounded-r-full animate-scale-in" />
               )}
