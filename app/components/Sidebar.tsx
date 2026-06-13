@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { useAuth } from '@/lib/contexts/AuthContext';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -89,7 +90,7 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Status indicator */}
+      {/* User info & Logout */}
       {!collapsed && (
         <div className="absolute bottom-6 left-3 right-3">
           <div className="p-3 rounded-xl bg-surface/50 border border-border/30">
@@ -97,8 +98,18 @@ export default function Sidebar() {
               <div className="w-2 h-2 rounded-full bg-green-400 animate-blink" />
               <span className="text-xs text-gray-400">System Online</span>
             </div>
-            <div className="text-[10px] text-gray-600 font-mono">
-              {new Date().toLocaleString('en-US', { timeZone: 'Africa/Kigali' })}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-gray-500 font-mono truncate">
+                {user?.name || 'Guest'}
+              </span>
+              {user && (
+                <button
+                  onClick={logout}
+                  className="text-[10px] text-red-400 hover:text-red-300 transition-colors"
+                >
+                  Logout
+                </button>
+              )}
             </div>
           </div>
         </div>
