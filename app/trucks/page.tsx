@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { mockTrucks } from '@/lib/data';
 import { Truck } from '@/lib/types';
 import PageHeader from '@/app/components/PageHeader';
 import StatusBadge from '@/app/components/StatusBadge';
@@ -139,15 +138,28 @@ function TruckCard({ truck, index }: { truck: Truck; index: number }) {
 
 export default function TrucksPage() {
   const [filter, setFilter] = useState<string>('all');
-  const filteredTrucks = filter === 'all' ? mockTrucks : mockTrucks.filter(t => t.status === filter);
-  const activeCount = mockTrucks.filter(t => t.status === 'active' || t.status === 'in_transit').length;
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/dashboard')
+      .then(res => res.json())
+      .then(data => {
+        setTrucks(data.trucks || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const filteredTrucks = filter === 'all' ? trucks : trucks.filter(t => t.status === filter);
+  const activeCount = trucks.filter(t => t.status === 'active' || t.status === 'in_transit').length;
 
   const stats = [
-    { label: 'Total', value: mockTrucks.length, color: 'text-white' },
-    { label: 'Active', value: mockTrucks.filter(t => t.status === 'active').length, color: 'text-green-400' },
-    { label: 'In Transit', value: mockTrucks.filter(t => t.status === 'in_transit').length, color: 'text-cyan-400' },
-    { label: 'Delayed', value: mockTrucks.filter(t => t.status === 'delayed').length, color: 'text-amber-400' },
-    { label: 'Maintenance', value: mockTrucks.filter(t => t.status === 'maintenance').length, color: 'text-gray-400' },
+    { label: 'Total', value: trucks.length, color: 'text-white' },
+    { label: 'Active', value: trucks.filter(t => t.status === 'active').length, color: 'text-green-400' },
+    { label: 'In Transit', value: trucks.filter(t => t.status === 'in_transit').length, color: 'text-cyan-400' },
+    { label: 'Delayed', value: trucks.filter(t => t.status === 'delayed').length, color: 'text-amber-400' },
+    { label: 'Maintenance', value: trucks.filter(t => t.status === 'maintenance').length, color: 'text-gray-400' },
   ];
 
   return (
@@ -188,11 +200,17 @@ export default function TrucksPage() {
       </div>
 
       {/* Truck Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filteredTrucks.map((truck, i) => (
-          <TruckCard key={truck.id} truck={truck} index={i} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center h-48">
+          <div className="animate-spin h-8 w-8 border-2 border-cyan-500 border-t-transparent rounded-full" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filteredTrucks.map((truck, i) => (
+            <TruckCard key={truck.id} truck={truck} index={i} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

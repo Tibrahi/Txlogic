@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { mockPackages } from '@/lib/data';
+import { useState, useEffect } from 'react';
 import { Package } from '@/lib/types';
 import PageHeader from '@/app/components/PageHeader';
 import StatusBadge from '@/app/components/StatusBadge';
@@ -118,8 +117,20 @@ function PackageCard({ pkg, index }: { pkg: Package; index: number }) {
 export default function PackagesPage() {
   const [filter, setFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = mockPackages.filter(p => {
+  useEffect(() => {
+    fetch('/api/dashboard')
+      .then(res => res.json())
+      .then(data => {
+        setPackages(data.packages || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const filtered = packages.filter(p => {
     const matchesFilter = filter === 'all' || p.status === filter;
     const matchesSearch = searchTerm === '' ||
       p.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -127,11 +138,19 @@ export default function PackagesPage() {
     return matchesFilter && matchesSearch;
   });
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 lg:p-8 max-w-[1600px] mx-auto">
       <PageHeader
         title="Package Tracking"
-        subtitle={`${mockPackages.length} packages across ${new Set(mockPackages.map(p => p.origin.country)).size} countries`}
+        subtitle={`${packages.length} packages across ${new Set(packages.map(p => p.origin.country)).size} countries`}
         breadcrumbs={[
           { label: 'Dashboard', href: '/', accent: 'text-purple-400' },
           { label: 'Packages' },
