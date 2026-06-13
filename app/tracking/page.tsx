@@ -36,7 +36,6 @@ export default function TrackingPage() {
   const [time, setTime] = useState(new Date());
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [filter, setFilter] = useState<string>('all');
-  const [pulseCount, setPulseCount] = useState(0);
   const [events, setEvents] = useState<{ time: string; text: string; type: string }[]>([
     { time: '14:32', text: 'Eagle Express passed Arusha checkpoint', type: 'truck' },
     { time: '14:28', text: 'TXLU-7842936 updated position: Indian Ocean', type: 'container' },
@@ -44,24 +43,6 @@ export default function TrackingPage() {
     { time: '14:20', text: 'CARGO-2026-KE-00142 containers loaded at Mombasa', type: 'cargo' },
     { time: '14:15', text: 'Night Owl speed: 95 km/h on Mogadishu-Nairobi route', type: 'truck' },
   ]);
-
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setPulseCount(p => p + 1);
-      setEvents(prev => {
-        const newEvents = [
-          { time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }), text: generateRandomEvent(), type: ['truck', 'package', 'container', 'cargo'][Math.floor(Math.random() * 4)] },
-        ];
-        return [...newEvents, ...prev].slice(0, 20);
-      });
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
 
   const generateRandomEvent = useCallback(() => {
     const events = [
@@ -74,6 +55,23 @@ export default function TrackingPage() {
     const names = allEntities.map(e => e.name).slice(0, 6);
     return `${names[Math.floor(Math.random() * names.length)]}: ${events[Math.floor(Math.random() * events.length)]}`;
   }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setEvents(prev => {
+        const newEvents = [
+          { time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }), text: generateRandomEvent(), type: ['truck', 'package', 'container', 'cargo'][Math.floor(Math.random() * 4)] },
+        ];
+        return [...newEvents, ...prev].slice(0, 20);
+      });
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [generateRandomEvent]);
 
   const filtered = filter === 'all' ? allEntities : allEntities.filter(e => e.type === filter);
 
