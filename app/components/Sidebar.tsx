@@ -1,8 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import NavLink from './NavLink';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -14,7 +14,7 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const router = useRouter();
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -58,9 +58,9 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="mt-6 px-3 space-y-1">
         {navItems.map((item) => {
-          const isActive = router.pathname === item.href;
+          const isActive = pathname === item.href;
           return (
-            <NavLink
+            <Link
               key={item.href}
               href={item.href}
               className={`group flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 relative overflow-hidden ${
@@ -84,7 +84,7 @@ export default function Sidebar() {
               {isActive && !collapsed && (
                 <div className="ml-auto w-2 h-2 rounded-full bg-cyan-400 animate-blink" />
               )}
-            </NavLink>
+            </Link>
           );
         })}
       </nav>

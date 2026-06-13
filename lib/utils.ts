@@ -1,4 +1,3 @@
-import { TrackingStatus } from './types';
 
 /** Status color configuration used consistently across all pages */
 export const statusColors: Record<string, { bg: string; text: string; border: string }> = {
