@@ -3,23 +3,26 @@
 import { useState } from 'react';
 import { mockPackages } from '@/lib/data';
 import { Package } from '@/lib/types';
-import Link from 'next/link';
+import PageHeader from '@/app/components/PageHeader';
+import StatusBadge from '@/app/components/StatusBadge';
+import ProgressBar from '@/app/components/ProgressBar';
+import RouteVisualizer from '@/app/components/RouteVisualizer';
+import SearchInput from '@/app/components/SearchInput';
+import FilterBar from '@/app/components/FilterBar';
+import EventTimeline from '@/app/components/EventTimeline';
+import EmptyState from '@/app/components/EmptyState';
+
+const statusFilters = ['all', 'in_transit', 'delivered', 'pending', 'loading', 'delayed'];
+
+const typeColors: Record<string, string> = {
+  express: 'text-amber-400',
+  fragile: 'text-rose-400',
+  hazardous: 'text-red-400',
+  standard: 'text-gray-400',
+};
 
 function PackageCard({ pkg, index }: { pkg: Package; index: number }) {
   const [expanded, setExpanded] = useState(false);
-
-  const statusColors: Record<string, { bg: string; text: string; border: string }> = {
-    in_transit: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20' },
-    delivered: { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20' },
-    pending: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
-    loading: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
-    delayed: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-  };
-  const sc = statusColors[pkg.status] || statusColors.pending;
-
-  const typeColors: Record<string, string> = {
-    express: 'text-amber-400', fragile: 'text-rose-400', hazardous: 'text-red-400', standard: 'text-gray-400',
-  };
 
   return (
     <div
@@ -27,7 +30,7 @@ function PackageCard({ pkg, index }: { pkg: Package; index: number }) {
       style={{ animationDelay: `${index * 0.08}s` }}
     >
       {/* Top accent */}
-      <div className="h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500" style={{ width: `${pkg.progress}%` }} />
+      <ProgressBar progress={pkg.progress} color="from-purple-500 via-pink-500 to-rose-500" height="sm" />
 
       <div className="p-5">
         {/* Header */}
@@ -38,46 +41,27 @@ function PackageCard({ pkg, index }: { pkg: Package; index: number }) {
             </div>
             <div>
               <h3 className="font-bold text-white text-sm font-mono">{pkg.trackingNumber}</h3>
-              <p className={`text-[10px] uppercase tracking-wider ${typeColors[pkg.type]}`}>{pkg.type}</p>
+              <p className={`text-[10px] uppercase tracking-wider ${typeColors[pkg.type] || 'text-gray-400'}`}>{pkg.type}</p>
             </div>
           </div>
-          <span className={`text-[10px] px-2.5 py-1 rounded-full ${sc.bg} ${sc.text} border ${sc.border} uppercase font-medium tracking-wider`}>
-            {pkg.status.replace('_', ' ')}
-          </span>
+          <StatusBadge status={pkg.status} />
         </div>
 
         {/* Route */}
-        <div className="flex items-center gap-2 mb-4 text-xs">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-purple-400" />
-            <span className="text-gray-300">{pkg.origin.city}</span>
-          </div>
-          <div className="flex-1 border-t border-dashed border-gray-600 relative">
-            <div
-              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-[8px] shadow-[0_0_10px_rgba(139,92,246,0.5)] transition-all duration-1000"
-              style={{ left: `calc(${pkg.progress}% - 8px)` }}
-            >
-              📦
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-gray-300">{pkg.destination.city}</span>
-            <div className="w-2 h-2 rounded-full bg-pink-400" />
-          </div>
+        <div className="mb-4">
+          <RouteVisualizer
+            originCity={pkg.origin.city}
+            destinationCity={pkg.destination.city}
+            progress={pkg.progress}
+            originColor="bg-purple-400"
+            destinationColor="bg-pink-400"
+            icon="📦"
+          />
         </div>
 
         {/* Progress */}
         <div className="mb-4">
-          <div className="flex items-center justify-between text-[10px] mb-1">
-            <span className="text-gray-500">Progress</span>
-            <span className="text-purple-400 font-mono">{pkg.progress}%</span>
-          </div>
-          <div className="w-full h-2 rounded-full bg-gray-800 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-1000"
-              style={{ width: `${pkg.progress}%` }}
-            />
-          </div>
+          <ProgressBar progress={pkg.progress} color="from-purple-500 to-pink-500" showLabel labelColor="text-purple-400" />
         </div>
 
         {/* Quick Info */}
@@ -120,27 +104,10 @@ function PackageCard({ pkg, index }: { pkg: Package; index: number }) {
         {expanded && (
           <div className="mt-4 animate-slide-up">
             <h4 className="text-[10px] text-gray-500 uppercase tracking-wider mb-3">Tracking Timeline</h4>
-            <div className="space-y-0">
-              {pkg.events.map((event, i) => (
-                <div key={i} className="flex gap-3 relative pb-4 last:pb-0">
-                  {/* Timeline line */}
-                  {i < pkg.events.length - 1 && (
-                    <div className="absolute left-[5px] top-3 bottom-0 w-px bg-gradient-to-b from-purple-500/30 to-transparent" />
-                  )}
-                  {/* Dot */}
-                  <div className={`w-[11px] h-[11px] rounded-full flex-shrink-0 mt-1 ${i === 0 ? 'bg-purple-400 animate-blink' : 'bg-gray-600'}`} />
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-xs font-medium text-white">{event.status}</span>
-                      <span className="text-[9px] text-gray-600 font-mono">{event.timestamp.slice(11)}</span>
-                    </div>
-                    <p className="text-[10px] text-gray-400">{event.description}</p>
-                    <p className="text-[9px] text-gray-600 mt-0.5">{event.location} • {event.timestamp.slice(0, 10)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <EventTimeline
+              events={pkg.events.map(e => ({ ...e, description: e.description || '' }))}
+              accentColor="purple"
+            />
           </div>
         )}
       </div>
@@ -151,60 +118,44 @@ function PackageCard({ pkg, index }: { pkg: Package; index: number }) {
 export default function PackagesPage() {
   const [filter, setFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+
   const filtered = mockPackages.filter(p => {
     const matchesFilter = filter === 'all' || p.status === filter;
-    const matchesSearch = searchTerm === '' || p.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()) || p.sender.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = searchTerm === '' ||
+      p.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.sender.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   return (
     <div className="p-6 lg:p-8 max-w-[1600px] mx-auto">
-      {/* Header */}
-      <div className="mb-8 animate-slide-up">
-        <div className="flex items-center gap-2 mb-2">
-          <Link href="/" className="text-xs text-gray-500 hover:text-purple-400 transition-colors">Dashboard</Link>
-          <span className="text-xs text-gray-600">/</span>
-          <span className="text-xs text-gray-300">Packages</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-1">
-              <span className="gradient-text">Package Tracking</span>
-            </h1>
-            <p className="text-gray-500 text-sm">{mockPackages.length} packages across {new Set(mockPackages.map(p => p.origin.country)).size} countries</p>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Package Tracking"
+        subtitle={`${mockPackages.length} packages across ${new Set(mockPackages.map(p => p.origin.country)).size} countries`}
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/', accent: 'text-purple-400' },
+          { label: 'Packages' },
+        ]}
+      />
 
       {/* Search */}
       <div className="mb-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-        <div className="relative max-w-md">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input
-            type="text"
-            placeholder="Search by tracking number or sender..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-border text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:shadow-[0_0_15px_rgba(139,92,246,0.1)] transition-all duration-300"
-          />
-        </div>
+        <SearchInput
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Search by tracking number or sender..."
+          accentColor="purple"
+        />
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-2 mb-6 animate-slide-up" style={{ animationDelay: '0.15s' }}>
-        {['all', 'in_transit', 'delivered', 'pending', 'loading', 'delayed'].map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`text-xs px-3 py-1.5 rounded-lg transition-all duration-300 ${
-              filter === f
-                ? 'bg-purple-500/10 text-purple-400 border border-purple-500/30'
-                : 'text-gray-500 hover:text-gray-300 border border-transparent hover:border-white/10'
-            }`}
-          >
-            {f === 'all' ? 'All' : f.replace('_', ' ')}
-          </button>
-        ))}
+      <div className="mb-6 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+        <FilterBar
+          filters={statusFilters}
+          activeFilter={filter}
+          onFilterChange={setFilter}
+          accentColor="purple"
+        />
       </div>
 
       {/* Package Grid */}
@@ -214,12 +165,7 @@ export default function PackagesPage() {
         ))}
       </div>
 
-      {filtered.length === 0 && (
-        <div className="text-center py-16 animate-scale-in">
-          <div className="text-4xl mb-4">📭</div>
-          <p className="text-gray-500">No packages match your search</p>
-        </div>
-      )}
+      {filtered.length === 0 && <EmptyState message="No packages match your search" />}
     </div>
   );
 }
