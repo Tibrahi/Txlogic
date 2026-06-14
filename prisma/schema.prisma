@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../app/generated/prisma"
@@ -10,4 +5,620 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  firstName     String    @map("first_name")
+  lastName      String    @map("last_name")
+  role          UserRole  @default(CUSTOMER)
+  avatar        String?
+  phone         String?
+  isActive      Boolean   @default(true) @map("is_active")
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  managedBranches       Branch[]
+  assignedShipments     Shipment[]
+  driverProfile         Driver?
+  customerProfile       Customer?
+  auditLogs             AuditLog[]
+  notifications         Notification[]
+  sessions              Session[]
+  deliveryProofs        DeliveryProof[]
+  incidentReports       IncidentReport[]
+  warehouseOperations   WarehouseOperation[]
+  deliveries            Delivery[]
+  @@map("users")
+}
+
+model Session {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  token         String    @unique
+  ipAddress     String?   @map("ip_address")
+  userAgent     String?   @map("user_agent")
+  expiresAt     DateTime  @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("sessions")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  LOGISTICS_MANAGER
+  DRIVER
+  CUSTOMER
+}
+
+model Branch {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  address     String
+  city        String
+  country     String
+  phone       String?
+  email       String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  managerId   String?  @map("manager_id")
+  manager     User?    @relation(fields: [managerId], references: [id])
+  warehouses  Warehouse[]
+  shipments   Shipment[]
+  customers   Customer[]
+  @@map("branches")
+}
+
+model Warehouse {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  address     String
+  city        String
+  country     String
+  latitude    Float?
+  longitude   Float?
+  capacity    Int      @default(0)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  branchId    String   @map("branch_id")
+  branch      Branch   @relation(fields: [branchId], references: [id])
+  storedCargo      Cargo[]       @relation("WarehouseCargo")
+  shipmentsFrom    Shipment[]    @relation("ShipmentOriginWarehouse")
+  shipmentsTo      Shipment[]    @relation("ShipmentDestWarehouse")
+  containers       Container[]   @relation("WarehouseContainers")
+  operations       WarehouseOperation[]
+  @@map("warehouses")
+}
+
+model WarehouseOperation {
+  id          String              @id @default(uuid())
+  type        WarehouseOpType
+  description String?
+  createdAt   DateTime            @default(now()) @map("created_at")
+  warehouseId String              @map("warehouse_id")
+  warehouse   Warehouse           @relation(fields: [warehouseId], references: [id])
+  userId      String?             @map("user_id")
+  user        User?               @relation(fields: [userId], references: [id])
+  @@map("warehouse_operations")
+}
+
+enum WarehouseOpType {
+  RECEIVING
+  DISPATCHING
+  INVENTORY_CHECK
+  MAINTENANCE
+  RELOCATION
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  phone       String?
+  address     String?
+  city        String?
+  country     String?
+  type        CustomerType @default(INDIVIDUAL)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  userId      String?  @unique @map("user_id")
+  user        User?    @relation(fields: [userId], references: [id])
+  branchId    String?  @map("branch_id")
+  branch      Branch?  @relation(fields: [branchId], references: [id])
+  shipments   Shipment[]
+  invoices    Invoice[]
+  @@map("customers")
+}
+
+enum CustomerType {
+  INDIVIDUAL
+  BUSINESS
+  ENTERPRISE
+}
+
+model Driver {
+  id              String   @id @default(uuid())
+  licenseNumber   String   @unique @map("license_number")
+  licenseExpiry   DateTime @map("license_expiry")
+  experience      Int      @default(0)
+  rating          Float    @default(5.0)
+  status          DriverStatus @default(AVAILABLE)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  userId          String   @unique @map("user_id")
+  user            User     @relation(fields: [userId], references: [id])
+  assignedTruckId String?  @unique @map("assigned_truck_id")
+  assignedTruck   Truck?   @relation(fields: [assignedTruckId], references: [id])
+  shipments       Shipment[]
+  incidents       IncidentReport[]
+  locationUpdates DriverLocation[]
+  @@map("drivers")
+}
+
+model DriverLocation {
+  id          String   @id @default(uuid())
+  latitude    Float
+  longitude   Float
+  speed       Float?
+  heading     Float?
+  recordedAt  DateTime @default(now()) @map("recorded_at")
+  driverId    String   @map("driver_id")
+  driver      Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  @@map("driver_locations")
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_TRIP
+  ON_LEAVE
+  SUSPENDED
+  INACTIVE
+}
+
+model Truck {
+  id              String   @id @default(uuid())
+  plateNumber     String   @unique @map("plate_number")
+  make            String
+  model           String
+  year            Int
+  color           String?
+  vin             String?  @unique
+  registrationExpiry DateTime? @map("registration_expiry")
+  insuranceExpiry DateTime? @map("insurance_expiry")
+  fuelType        String?  @map("fuel_type")
+  fuelLevel       Float    @default(100) @map("fuel_level")
+  mileage         Int      @default(0)
+  status          TruckStatus @default(AVAILABLE)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  assignedDriverId String?  @unique @map("assigned_driver_id")
+  assignedDriver   Driver?  @relation(fields: [assignedDriverId], references: [id])
+  shipments       Shipment[]
+  containers      Container[]
+  maintenances    TruckMaintenance[]
+  locationUpdates TruckLocation[]
+  deliveries      Delivery[]
+  @@map("trucks")
+}
+
+model TruckLocation {
+  id          String   @id @default(uuid())
+  latitude    Float
+  longitude   Float
+  speed       Float?
+  heading     Float?
+  odometer    Int?
+  recordedAt  DateTime @default(now()) @map("recorded_at")
+  truckId     String   @map("truck_id")
+  truck       Truck    @relation(fields: [truckId], references: [id], onDelete: Cascade)
+  @@map("truck_locations")
+}
+
+model TruckMaintenance {
+  id          String   @id @default(uuid())
+  type        String
+  description String?
+  cost        Float?
+  provider    String?
+  scheduledAt DateTime @map("scheduled_at")
+  completedAt DateTime? @map("completed_at")
+  status      MaintenanceStatus @default(SCHEDULED)
+  createdAt   DateTime @default(now()) @map("created_at")
+  truckId     String   @map("truck_id")
+  truck       Truck    @relation(fields: [truckId], references: [id])
+  @@map("truck_maintenances")
+}
+
+enum TruckStatus {
+  AVAILABLE
+  IN_TRANSIT
+  IN_MAINTENANCE
+  OUT_OF_SERVICE
+  RESERVED
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Container {
+  id              String   @id @default(uuid())
+  containerNumber String   @unique @map("container_number")
+  type            ContainerType
+  size            ContainerSize
+  status          ContainerStatus @default(AVAILABLE)
+  weight          Float?
+  currentLocation String?  @map("current_location")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  assignedTruckId String?  @map("assigned_truck_id")
+  assignedTruck   Truck?   @relation(fields: [assignedTruckId], references: [id])
+  warehouseId     String?  @map("warehouse_id")
+  warehouse       Warehouse? @relation("WarehouseContainers", fields: [warehouseId], references: [id])
+  cargo           Cargo[]
+  shipments       Shipment[]
+  movements       ContainerMovement[]
+  @@map("containers")
+}
+
+model ContainerMovement {
+  id          String   @id @default(uuid())
+  fromLocation String? @map("from_location")
+  toLocation  String? @map("to_location")
+  status      String
+  notes       String?
+  recordedAt  DateTime @default(now()) @map("recorded_at")
+  containerId String   @map("container_id")
+  container   Container @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  @@map("container_movements")
+}
+
+enum ContainerType {
+  DRY_STORAGE
+  REFRIGERATED
+  TANK
+  FLAT_RACK
+  OPEN_TOP
+  VENTILATED
+}
+
+enum ContainerSize {
+  TWENTY_FT
+  FORTY_FT
+  FORTY_HC
+  FORTY_FIVE_HC
+  FIFTY_THREE_FT
+}
+
+enum ContainerStatus {
+  AVAILABLE
+  IN_USE
+  IN_TRANSIT
+  AT_WAREHOUSE
+  UNDER_MAINTENANCE
+  RESERVED
+}
+
+model Cargo {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  type          CargoType
+  weight        Float
+  volume        Float?
+  quantity      Int      @default(1)
+  value         Float?
+  hazmatClass   String?  @map("hazmat_class")
+  status        CargoStatus @default(PENDING)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  warehouseId   String?  @map("warehouse_id")
+  warehouse     Warehouse? @relation("WarehouseCargo", fields: [warehouseId], references: [id])
+  shipmentId    String?  @map("shipment_id")
+  shipment      Shipment? @relation(fields: [shipmentId], references: [id])
+  containerId   String?  @map("container_id")
+  container     Container? @relation(fields: [containerId], references: [id])
+  shipmentItems ShipmentItem[]
+  @@map("cargo")
+}
+
+enum CargoType {
+  GENERAL
+  FRAGILE
+  HAZARDOUS
+  PERISHABLE
+  LIQUID
+  BULK
+  OVERSIZED
+  ELECTRONICS
+}
+
+enum CargoStatus {
+  PENDING
+  RECEIVED
+  IN_WAREHOUSE
+  LOADED
+  IN_TRANSIT
+  DELIVERED
+  DAMAGED
+}
+
+model Shipment {
+  id              String   @id @default(uuid())
+  trackingNumber  String   @unique @map("tracking_number")
+  title           String?
+  description     String?
+  status          ShipmentStatus @default(CREATED)
+  priority        ShipmentPriority @default(NORMAL)
+  weight          Float?
+  totalValue      Float?   @map("total_value")
+  origin          String
+  destination     String
+  originCity      String?  @map("origin_city")
+  destCity        String?  @map("dest_city")
+  estimatedArrival DateTime? @map("estimated_arrival")
+  actualArrival   DateTime? @map("actual_arrival")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  customerId      String?  @map("customer_id")
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  branchId        String?  @map("branch_id")
+  branch          Branch?  @relation(fields: [branchId], references: [id])
+  assigneeId      String?  @map("assignee_id")
+  assignee        User?    @relation(fields: [assigneeId], references: [id])
+  originWarehouseId String? @map("origin_warehouse_id")
+  originWarehouse   Warehouse? @relation("ShipmentOriginWarehouse", fields: [originWarehouseId], references: [id])
+  destWarehouseId String?  @map("dest_warehouse_id")
+  destWarehouse   Warehouse? @relation("ShipmentDestWarehouse", fields: [destWarehouseId], references: [id])
+  truckId         String?  @map("truck_id")
+  truck           Truck?   @relation(fields: [truckId], references: [id])
+  driverId        String?  @map("driver_id")
+  driver          Driver?  @relation(fields: [driverId], references: [id])
+  containerId     String?  @map("container_id")
+  container       Container? @relation(fields: [containerId], references: [id])
+  items           ShipmentItem[]
+  statusHistory   ShipmentStatusHistory[]
+  delivery        Delivery?
+  invoice         Invoice?
+  cargoItems      Cargo[]
+  incidentReports IncidentReport[]
+  @@map("shipments")
+}
+
+model ShipmentItem {
+  id          String   @id @default(uuid())
+  description String
+  quantity    Int      @default(1)
+  weight      Float?
+  value       Float?
+  createdAt   DateTime @default(now()) @map("created_at")
+  shipmentId  String   @map("shipment_id")
+  shipment    Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  cargoId     String?  @map("cargo_id")
+  cargo       Cargo?   @relation(fields: [cargoId], references: [id])
+  @@map("shipment_items")
+}
+
+model ShipmentStatusHistory {
+  id          String   @id @default(uuid())
+  status      ShipmentStatus
+  location    String?
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  shipmentId  String   @map("shipment_id")
+  shipment    Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  @@map("shipment_status_history")
+}
+
+enum ShipmentStatus {
+  CREATED
+  PROCESSING
+  IN_WAREHOUSE
+  CARGO_ASSIGNED
+  CONTAINER_ASSIGNED
+  TRUCK_ASSIGNED
+  IN_TRANSIT
+  AT_DESTINATION_WAREHOUSE
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  DELAYED
+}
+
+enum ShipmentPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+  CRITICAL
+}
+
+model Delivery {
+  id              String   @id @default(uuid())
+  status          DeliveryStatus @default(PENDING)
+  scheduledDate   DateTime @map("scheduled_date")
+  completedDate   DateTime? @map("completed_date")
+  recipientName   String?  @map("recipient_name")
+  recipientSignature String? @map("recipient_signature")
+  deliveryAddress String?  @map("delivery_address")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  shipmentId      String   @unique @map("shipment_id")
+  shipment        Shipment @relation(fields: [shipmentId], references: [id])
+  truckId         String?  @map("truck_id")
+  truck           Truck?   @relation(fields: [truckId], references: [id])
+  driverId        String?  @map("driver_id")
+  driver          User?    @relation(fields: [driverId], references: [id])
+  proofs          DeliveryProof[]
+  @@map("deliveries")
+}
+
+model DeliveryProof {
+  id          String   @id @default(uuid())
+  type        ProofType
+  fileUrl     String?  @map("file_url")
+  notes       String?
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime @default(now()) @map("created_at")
+  deliveryId  String   @map("delivery_id")
+  delivery    Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  uploadedById String @map("uploaded_by_id")
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
+  @@map("delivery_proofs")
+}
+
+enum DeliveryStatus {
+  PENDING
+  SCHEDULED
+  IN_TRANSIT
+  ATTEMPTED
+  COMPLETED
+  FAILED
+  RETURNED
+}
+
+enum ProofType {
+  PHOTO
+  SIGNATURE
+  BARCODE_SCAN
+  GPS_CONFIRMATION
+}
+
+model Invoice {
+  id              String   @id @default(uuid())
+  invoiceNumber   String   @unique @map("invoice_number")
+  amount          Float
+  tax             Float    @default(0)
+  discount        Float    @default(0)
+  totalAmount     Float    @map("total_amount")
+  currency        String   @default("USD")
+  status          InvoiceStatus @default(DRAFT)
+  dueDate         DateTime? @map("due_date")
+  paidDate        DateTime? @map("paid_date")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  shipmentId      String   @unique @map("shipment_id")
+  shipment        Shipment @relation(fields: [shipmentId], references: [id])
+  customerId      String   @map("customer_id")
+  customer        Customer @relation(fields: [customerId], references: [id])
+  items           InvoiceItem[]
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Float    @map("unit_price")
+  total       Float
+  createdAt   DateTime @default(now()) @map("created_at")
+  invoiceId   String   @map("invoice_id")
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  @@map("invoice_items")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  title       String
+  message     String
+  type        NotificationType
+  isRead      Boolean  @default(false) @map("is_read")
+  link        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("notifications")
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  SHIPMENT_UPDATE
+  DELIVERY_UPDATE
+  SYSTEM_ALERT
+}
+
+model IncidentReport {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  type        IncidentType
+  severity    IncidentSeverity @default(MEDIUM)
+  status      IncidentStatus @default(OPEN)
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  driverId    String   @map("driver_id")
+  driver      Driver   @relation(fields: [driverId], references: [id])
+  reportedById String  @map("reported_by_id")
+  reportedBy   User    @relation(fields: [reportedById], references: [id])
+  shipmentId  String?  @map("shipment_id")
+  shipment    Shipment? @relation(fields: [shipmentId], references: [id])
+  @@map("incident_reports")
+}
+
+enum IncidentType {
+  ACCIDENT
+  BREAKDOWN
+  THEFT
+  DAMAGE
+  DELAY
+  WEATHER
+  ROAD_CLOSURE
+  OTHER
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String
+  entity      String
+  entityId    String?  @map("entity_id")
+  oldValues   String?  @map("old_values")
+  newValues   String?  @map("new_values")
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  @@map("audit_logs")
 }
