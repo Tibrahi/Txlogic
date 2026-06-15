@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
@@ -155,7 +155,7 @@ model Driver {
   userId          String   @unique @map("user_id")
   user            User     @relation(fields: [userId], references: [id])
   assignedTruckId String?  @unique @map("assigned_truck_id")
-  assignedTruck   Truck?   @relation(fields: [assignedTruckId], references: [id])
+  assignedTruck   Truck?   @relation("DriverAssignedTruck", fields: [assignedTruckId], references: [id])
   shipments       Shipment[]
   incidents       IncidentReport[]
   locationUpdates DriverLocation[]
@@ -200,7 +200,7 @@ model Truck {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
   assignedDriverId String?  @unique @map("assigned_driver_id")
-  assignedDriver   Driver?  @relation(fields: [assignedDriverId], references: [id])
+  assignedDriver   Driver?  @relation("DriverAssignedTruck")
   shipments       Shipment[]
   containers      Container[]
   maintenances    TruckMaintenance[]
